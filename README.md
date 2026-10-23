@@ -18,27 +18,64 @@ Este proyecto busca automatizar la atención inicial y la programación de citas
 
 ## Stack tecnológico
 
-_Por definir por el equipo._ Cuando se elija, actualizar esta sección, el `.gitignore` y la estructura de carpetas según corresponda.
-
 | Componente | Tecnología |
 |---|---|
-| Frontend | *pendiente* |
-| Backend / API | *pendiente* |
-| Base de datos | *pendiente* |
-| Chatbot / mensajería | *pendiente* |
+| Frontend | HTML, CSS y JavaScript (módulos ES, sin paso de compilación) |
+| Backend / API | Node.js 20+ con Express 4 |
+| Base de datos | MySQL 8 |
+| Chatbot / mensajería | Asistente propio en el sitio (paquete `chatbot/`) con canalización a WhatsApp |
+| Sesiones | Cookie httpOnly con JWT; contraseñas con bcrypt |
+| Pruebas | `node:test` + Supertest, en GitHub Actions con MySQL |
+
+> El chatbot vive en el sitio web. Cuando la conversación lo requiere (urgencia, duda que no sabe resolver) da el enlace de WhatsApp de la clínica y deja la solicitud en el panel. Conectarlo a la API de WhatsApp Business queda como siguiente etapa: el motor (`chatbot/src/engine.js`) no depende del canal.
+
+## Cómo correrlo en tu computadora
+
+Necesitas **Node.js 20.10 o superior** y **MySQL 8** encendido.
+
+1. Instala las dependencias desde la raíz del repositorio:
+   ```bash
+   npm install
+   ```
+2. Crea un usuario de MySQL para el proyecto (una sola vez):
+   ```sql
+   CREATE USER 'vida'@'localhost' IDENTIFIED BY 'elige-una-contraseña';
+   GRANT ALL PRIVILEGES ON vida_animal.* TO 'vida'@'localhost';
+   GRANT ALL PRIVILEGES ON vida_animal_test.* TO 'vida'@'localhost';
+   ```
+3. Copia `backend/.env.example` a `backend/.env` y llena `DB_PASSWORD` y `JWT_SECRET` (una frase larga y aleatoria).
+4. Crea las tablas y los datos de ejemplo:
+   ```bash
+   npm run db:setup
+   ```
+   Al terminar muestra los usuarios del panel. Si no definiste `SEED_ADMIN_PASSWORD` / `SEED_STAFF_PASSWORD`, las contraseñas se generan al azar y **solo se muestran esa vez**. Volver a correrlo borra y recrea la base.
+5. Enciende el servidor:
+   ```bash
+   npm run dev      # se reinicia al guardar cambios
+   ```
+   - Sitio público y asistente: http://localhost:3000
+   - Panel administrativo: http://localhost:3000/admin
+
+### Pruebas
+
+```bash
+npm test
+```
+
+Corre las pruebas del motor del chatbot y las de la API. Las de la API usan una base aparte (`vida_animal_test`) que se recrea en cada corrida, así que no tocan tus datos. Las mismas pruebas corren en cada Pull Request (`.github/workflows/ci.yml`).
 
 ## Estructura del repositorio
 
 ```
 .
-├── frontend/     # Sitio web / interfaz de usuario
-├── backend/      # API y lógica de negocio
-├── chatbot/      # Integración de chatbot y programación de citas
-├── docs/         # Documentación del proyecto (fases, actas, diagramas)
-└── .github/      # Plantillas de issues y pull requests
+├── frontend/public/   # Sitio, inicio de sesión y panel (lo sirve el backend)
+├── backend/           # API Express, esquema y datos de ejemplo de MySQL, pruebas
+├── chatbot/           # Motor de conversación del asistente (sin dependencias)
+├── docs/              # Documentación del proyecto (fases, actas, diagramas)
+└── .github/           # Plantillas de issues y PR, integración continua
 ```
 
-Cada carpeta tiene un `README.md` propio que se irá completando conforme se defina el stack.
+Cada carpeta tiene un `README.md` con el detalle de su parte.
 
 ## Equipo
 
