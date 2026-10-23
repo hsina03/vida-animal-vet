@@ -38,6 +38,7 @@ obj/
 # Variables de entorno / secretos
 .env
 .env.*
+!.env.example
 *.pem
 *.key
 
