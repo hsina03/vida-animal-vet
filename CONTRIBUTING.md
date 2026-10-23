@@ -46,4 +46,9 @@ Usa las plantillas disponibles al crear un issue (`Bug`, `Feature`, `Tarea`) par
 
 ## Estilo de código
 
-Pendiente de definir una vez elegido el stack tecnológico. Cuando se decida, documentar aquí el formateador/linter que usará el equipo (ej. Prettier, ESLint, Black, etc.) para mantener consistencia.
+- JavaScript moderno (Node.js 20+ en el backend, módulos ES en el navegador), dos espacios de sangría, comillas simples y punto y coma.
+- Nombres de tablas, columnas y rutas de la API en español y en `snake_case` (`propietarios`, `duracion_min`); funciones y variables en `camelCase`.
+- Todo texto que vea un usuario va en español, en tono amable y concreto. Los errores de la API (`{ "error": "..." }`) se muestran tal cual en pantalla, así que deben poder leerse sin contexto técnico.
+- En el frontend, cualquier dato que venga de la API se pinta con `esc()` (de `js/common.js`) para evitar inyección de HTML.
+- Las consultas a MySQL siempre usan parámetros (`?`), nunca texto concatenado.
+- Antes de abrir un PR corre `npm test`. Si agregas una regla de negocio en el backend, agrega su prueba en `backend/tests/`.
