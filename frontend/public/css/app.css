@@ -1,0 +1,45 @@
+/* Complementos del sistema sobre styles.css (estilos que el prototipo no necesitaba). */
+
+.muted{color:var(--ink-3);font-size:14.5px}
+.loading{padding:40px 24px;text-align:center;color:var(--ink-3)}
+.load-error{color:var(--err);background:var(--err-bg);border-radius:10px;padding:12px 14px;font-size:15px}
+.about-note{color:var(--ink-2);margin-top:14px}
+.btn-block{width:100%;justify-content:center}
+.btn-bare{background:transparent;border:0}
+.ic-sm{width:15px;height:15px;vertical-align:-2px}
+.toast.toast-error{background:var(--err)}
+.toast.toast-error .ic{color:#fff}
+
+/* Barra lateral: el botón de cerrar sesión se ve como los enlaces */
+.nav-btn{width:100%;border:0;background:transparent;text-align:left;font:inherit;cursor:pointer}
+
+/* Panel */
+.stack{display:grid;gap:20px;align-content:start}
+.save-h{justify-self:start}
+.hr-l{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2)}
+.hr-l.off{opacity:.4;pointer-events:none}
+.pet-add{place-items:center;display:flex;gap:8px;justify-content:center;border-style:dashed;background:transparent;color:var(--purple);font-weight:700;cursor:pointer;min-height:90px}
+.pet-add:hover{background:var(--lav)}
+.svc-ic-sm{width:34px;height:34px;border-radius:10px;flex:none}
+.u-cell{display:flex;align-items:center;gap:10px}
+.avatar-sm{width:30px;height:30px;font-size:12.5px}
+.check{display:flex;align-items:center;gap:10px;font-size:15px;margin-top:6px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--purple)}
+.btn-danger-text{color:var(--err);margin-right:auto}
+.grow{flex:1;min-width:0}
+.sw:disabled{opacity:.45;cursor:not-allowed}
+
+@media (max-width:760px){
+  .day-row{grid-template-columns:1fr auto;row-gap:8px}
+  .hr-l{grid-column:span 1}
+}
+
+/* Ajustes al portar el prototipo a enlaces y botones reales */
+a.kpi{text-decoration:none;color:inherit}
+a.kpi:hover{border-color:var(--lav-2)}
+.panel.table-wrap{overflow:hidden}
+button.ev{display:block;width:100%;text-align:left;font:inherit;font-size:12.5px;border:0;border-left:3px solid currentColor;background:color-mix(in srgb,currentColor 12%,#fff);position:relative;z-index:1}
+.wk-c{overflow:visible}
+.mb{margin-bottom:20px}
+.faq{display:flex;gap:12px;align-items:flex-start}
+.faq.off{opacity:.55}
