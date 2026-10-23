@@ -1,37 +1,67 @@
 # Backend
 
-Base de datos MySQL 8 de Vida Animal II. La API que la usa llega en el PR de VA2-15.
+API en Node.js + Express sobre MySQL 8. También sirve los archivos de `frontend/public`, así que un solo proceso levanta el sitio, el asistente y el panel.
 
-## Preparar la base
+Las instrucciones para correrlo están en el [README raíz](../README.md#cómo-correrlo-en-tu-computadora).
 
-Necesitas Node.js 20.10+ y MySQL 8 encendido.
-
-1. Crea un usuario de MySQL (una sola vez):
-   ```sql
-   CREATE USER 'vida'@'localhost' IDENTIFIED BY 'elige-una-contraseña';
-   GRANT ALL PRIVILEGES ON vida_animal.* TO 'vida'@'localhost';
-   ```
-2. Copia `.env.example` a `.env` y llena `DB_PASSWORD`.
-3. Desde esta carpeta:
-   ```bash
-   npm install
-   npm run db:setup
-   ```
-   Crea la base, carga el esquema y los datos, y muestra los usuarios del panel. Si no defines `SEED_ADMIN_PASSWORD` / `SEED_STAFF_PASSWORD`, las contraseñas son aleatorias y **solo se muestran esa vez**. `--sin-demo` omite las citas y solicitudes de ejemplo. Volver a correrlo borra y recrea las tablas.
-
-## Archivos
+## Carpetas
 
 | Ruta | Qué contiene |
 |---|---|
 | `db/schema.sql` | Tablas: usuarios, propietarios, mascotas, servicios, horarios, días sin servicio, configuración, preguntas frecuentes, citas y solicitudes del chat |
-| `db/seed.sql` | Servicios de la clínica, horario, reglas de agenda (espacios de 30 min, 2 citas simultáneas, 2 h de anticipación), preguntas frecuentes y propietarios de ejemplo |
-| `scripts/db-setup.js` | Crea la base y los usuarios (contraseñas con bcrypt) |
-| `src/config.js`, `src/db.js`, `src/utils.js` | Configuración, conexión a MySQL (en la zona horaria de la clínica) y utilidades de fechas y teléfonos |
+| `db/seed.sql` | Datos iniciales: servicios de la clínica, horario, reglas de agenda y propietarios de ejemplo |
+| `scripts/db-setup.js` | Crea la base, carga esquema y datos, crea los usuarios del panel (`--sin-demo` omite citas y solicitudes de ejemplo) |
+| `src/services/` | Reglas de negocio: disponibilidad, citas, propietarios, solicitudes y configuración |
+| `src/routes/` | Rutas HTTP; solo validan entrada y llaman a los servicios |
+| `src/middleware/auth.js` | Sesión (cookie httpOnly con JWT), `requireAuth` y `requireRole` |
+| `tests/` | Pruebas con `node:test` y Supertest contra una base de pruebas |
 
-## Decisiones del esquema
+## Reglas de agenda
 
-- Fechas y horas se leen como texto (`dateStrings`) para que un día no se recorra por zona horaria; la conexión usa la zona de `TZ` (`America/Ciudad_Juarez`).
-- `propietarios.telefono` es único y de 10 dígitos: es como se identifica a un cliente que llega por el asistente.
-- `mascotas.peso` es texto para admitir gramos en aves y especies pequeñas.
-- `citas.origen` distingue citas del asistente (`chat`, quedan pendientes) de las que registra el personal.
-- `solicitudes` guarda la conversación completa (JSON) y un folio `SOL-0001` para darle seguimiento.
+- Cada día se divide en espacios de `duracion_espacio_min` (30 min por omisión). Un servicio más largo ocupa varios espacios seguidos.
+- En un mismo espacio caben hasta `citas_simultaneas` citas (2 por omisión). Al llenarse deja de ofrecerse en el asistente y en el panel.
+- No se ofrecen horarios con menos de `anticipacion_min` minutos de anticipación, ni días marcados como sin servicio.
+- Al registrar o reprogramar, la revisión de cupo corre dentro de una transacción con un candado de agenda, así dos registros simultáneos no pueden tomar el mismo último lugar (RNF-05). Hay una prueba para esto en `tests/citas.test.js`.
+- Las citas que llegan por el asistente quedan **pendientes** con una solicitud en el panel; el personal las confirma desde «Solicitudes del chat».
+
+## API
+
+Todas las respuestas son JSON. Los errores llegan como `{ "error": "mensaje para mostrar" }`.
+
+**Públicas** (`/api/public`)
+
+| Método | Ruta | Uso |
+|---|---|---|
+| GET | `/info` | Datos de la clínica, horario y servicios visibles |
+| POST | `/chat` | Un turno del asistente: `{ sessionId?, optionId?, text? }` |
+
+**Sesión** (`/api/auth`): `POST /login`, `POST /logout`, `GET /me`.
+
+**Panel** (`/api`, requieren sesión; las marcadas con ★ solo el administrador)
+
+| Método | Ruta | Uso |
+|---|---|---|
+| GET | `/resumen` | Indicadores y agenda del día |
+| GET | `/disponibilidad?fecha=&servicio_id=&ignorar=` | Horarios de un día con su cupo |
+| GET, POST | `/citas` | Listar (`desde`, `hasta`, `estado`) y registrar |
+| GET | `/citas/:id` | Detalle |
+| POST | `/citas/:id/reprogramar`, `/citas/:id/cancelar` | Cambiar horario o cancelar con motivo |
+| PATCH | `/citas/:id/estado` | Confirmar o marcar como atendida |
+| GET, POST | `/propietarios` | Buscar (`q`) y registrar (con mascota opcional) |
+| GET, PUT | `/propietarios/:id` | Detalle con mascotas e historial; editar |
+| POST | `/propietarios/:id/mascotas` | Agregar mascota |
+| PUT | `/mascotas/:id` | Editar mascota |
+| GET | `/solicitudes?abiertas=1`, `/solicitudes/:id` | Solicitudes del asistente con la conversación |
+| POST | `/solicitudes/:id/resolver` | Confirmar la cita pedida o marcar como resuelta |
+| GET | `/horarios` | Horario semanal, reglas y días sin servicio |
+| PUT ★ | `/horarios` | Guardar horario y reglas |
+| POST, DELETE ★ | `/horarios/inhabiles[/:id]` | Días sin servicio |
+| GET ★ | `/contenido` | Servicios, contacto y preguntas frecuentes |
+| PUT ★ | `/servicios/:id`, `/contacto` | Editar contenido del sitio |
+| POST, PUT, DELETE ★ | `/faq[/:id]` | Preguntas frecuentes del asistente |
+| GET, POST ★ | `/usuarios` | Usuarios del panel |
+| PATCH ★ | `/usuarios/:id` | Nombre, rol, contraseña o acceso activo |
+
+## Variables de entorno
+
+Ver `.env.example`. En producción `JWT_SECRET` es obligatorio (mínimo 16 caracteres). `TZ` debe ser `America/Ciudad_Juarez` para que «hoy» y la anticipación coincidan con la clínica; la conexión a MySQL usa la misma zona.
