@@ -1,0 +1,19 @@
+{
+  "name": "vida-animal-vet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema para Vida Animal II: sitio web, chatbot de citas y panel administrativo",
+  "workspaces": [
+    "chatbot",
+    "backend"
+  ],
+  "scripts": {
+    "start": "npm run start -w backend",
+    "dev": "npm run dev -w backend",
+    "db:setup": "npm run db:setup -w backend",
+    "test": "npm test -w chatbot && npm test -w backend"
+  },
+  "engines": {
+    "node": ">=20.10"
+  }
+}
