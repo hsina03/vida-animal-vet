@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vida Animal II — Clínica veterinaria en Plaza del Sol</title>
+<meta name="description" content="Consultas, vacunas, cirugías, estética y hospedaje para tu mascota en Plaza del Sol, Ciudad Juárez. Agenda tu cita con nuestro asistente.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/css/app.css">
+<script type="module" src="/js/site.js"></script>
+</head>
+<body>
+<div class="screen on" id="s-sitio">
+  <header class="site-head">
+    <div class="wrap">
+      <a class="brand" href="/" aria-label="Vida Animal II, inicio">
+        <svg class="brand-mark" data-logo viewBox="0 0 48 48" aria-hidden="true"></svg>
+        <span class="brand-text"><span class="brand-name">VIDA ANIMAL II</span><span class="brand-sub">clínica veterinaria</span></span>
+      </a>
+      <nav class="site-nav" aria-label="Secciones">
+        <a href="#servicios">Servicios</a>
+        <a href="#como-agendar">Cómo agendar</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#visitanos">Ubicación y contacto</a>
+      </nav>
+      <button class="btn btn-primary" data-open-chat="cita"><svg class="ic"><use href="#i-cal"/></svg>Agendar cita</button>
+    </div>
+  </header>
+
+  <main>
+  <section class="hero" id="inicio">
+    <svg class="pulse" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60 H520 l18 -34 l22 58 l20 -76 l18 52 H1440"/></svg>
+    <div class="wrap">
+      <div class="hero-copy">
+        <h1>Cuidamos a tu mascota en Plaza del Sol</h1>
+        <p class="hero-lead">Consultas, vacunas, cirugías, estética y hospedaje en un mismo lugar. Agenda tu cita en minutos con nuestro asistente, sin esperar respuesta por mensaje.</p>
+        <div class="hero-cta">
+          <button class="btn btn-primary" data-open-chat="cita"><svg class="ic"><use href="#i-chat"/></svg>Agendar con el asistente</button>
+          <a class="btn btn-ghost" href="#servicios">Ver servicios</a>
+        </div>
+        <div class="hero-meta">
+          <div><svg class="ic"><use href="#i-pin"/></svg>Plaza del Sol, Ciudad Juárez</div>
+          <div><svg class="ic"><use href="#i-clock"/></svg><span data-bind="horario-corto">Lun a sáb</span></div>
+        </div>
+      </div>
+      <div class="arch"><img alt="Gatito y cachorro asomados" src="/img/hero.jpg" width="440" height="220"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="servicios">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Todo lo que tu mascota necesita, en una sola visita</h2>
+        <p>Nuestro equipo de médicos veterinarios atiende desde la consulta de rutina hasta la hospitalización. Si no sabes qué servicio elegir, el asistente te orienta.</p>
+      </div>
+      <div class="svc-groups" id="svc-groups" aria-busy="true"></div>
+    </div>
+  </section>
+
+  <section class="sec steps-sec" id="como-agendar">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Agenda tu cita en tres pasos</h2>
+        <p>El asistente está disponible a cualquier hora. Tu solicitud llega directo a la agenda de la clínica y te confirmamos por WhatsApp.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><h3>Abre el asistente</h3><p>Toca «Agendar cita» y dinos qué servicio necesitas. También puedes resolver dudas frecuentes.</p></div>
+        <div class="step"><h3>Elige día y horario</h3><p>Solo verás los horarios que siguen libres, así no hay cruces con otras citas.</p></div>
+        <div class="step"><h3>Recibe la confirmación</h3><p>Deja tu nombre, el de tu mascota y un teléfono. El personal confirma tu cita por WhatsApp.</p></div>
+      </div>
+      <button class="btn btn-primary" data-open-chat="cita"><svg class="ic"><use href="#i-chat"/></svg>Empezar ahora</button>
+    </div>
+  </section>
+
+  <section class="sec" id="nosotros">
+    <div class="wrap about">
+      <div>
+        <h2>Una clínica de barrio con atención de especialidad</h2>
+        <p class="about-q">«Brindamos servicios integrales para el cuidado y bienestar de las mascotas, con atención responsable, profesional y comprometida con la tranquilidad de sus familias.»</p>
+        <p class="about-note">Vida Animal II es la segunda sucursal de Vida Animal. Abrimos en Plaza del Sol para atender a más familias de Ciudad Juárez con el mismo equipo de médicos veterinarios.</p>
+      </div>
+      <div class="values">
+        <div class="value"><svg class="ic"><use href="#i-heart"/></svg><div><h3>Confianza</h3><p>Te explicamos cada diagnóstico y tratamiento antes de empezar.</p></div></div>
+        <div class="value"><svg class="ic"><use href="#i-shield"/></svg><div><h3>Trato responsable</h3><p>Seguimos protocolos claros en consulta, cirugía y hospitalización.</p></div></div>
+        <div class="value"><svg class="ic"><use href="#i-paw"/></svg><div><h3>Atención personalizada</h3><p>Cuatro médicos veterinarios que conocen a cada paciente por su nombre.</p></div></div>
+        <div class="value"><svg class="ic"><use href="#i-pulse"/></svg><div><h3>Mejora continua</h3><p>Actualizamos nuestros procesos para que agendar sea cada vez más fácil.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec visit" id="visitanos">
+    <div class="wrap">
+      <div class="sec-head"><h2>Visítanos en Plaza del Sol</h2><p>Estamos dentro de la plaza, con estacionamiento. Si tu mascota necesita atención urgente, escríbenos antes de llegar.</p></div>
+      <div class="visit-grid">
+        <div class="map">
+          <svg viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Mapa ilustrativo de Plaza del Sol">
+            <rect width="640" height="400" fill="#EFE6F6"/>
+            <g stroke="#fff" stroke-width="18" fill="none"><path d="M-10 120 H660"/><path d="M-10 300 H660"/><path d="M160 -10 V410"/><path d="M470 -10 V410"/></g>
+            <g stroke="#fff" stroke-width="8" fill="none" opacity=".8"><path d="M-10 210 H660"/><path d="M320 -10 V410"/></g>
+            <rect x="180" y="140" width="270" height="140" rx="12" fill="#E2D3EE"/>
+            <text x="315" y="268" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="14" font-weight="600" fill="#6B4391">Plaza del Sol</text>
+            <g transform="translate(315 196)"><circle r="34" fill="#9A2456" opacity=".15"/><path d="M0 18c-10-11-16-19-16-27a16 16 0 0 1 32 0c0 8-6 16-16 27z" fill="#9A2456"/><circle cy="-9" r="6" fill="#fff"/></g>
+          </svg>
+        </div>
+        <div class="contact">
+          <div class="contact-row"><svg class="ic"><use href="#i-pin"/></svg><div><b>Dirección</b><span data-bind="direccion">Plaza del Sol, Ciudad Juárez, Chih.</span></div></div>
+          <div class="contact-row"><svg class="ic"><use href="#i-phone"/></svg><div><b>Teléfono y WhatsApp</b><span data-bind="telefono">—</span></div></div>
+          <div class="contact-row"><svg class="ic"><use href="#i-clock"/></svg><div><b>Horario</b><table class="hours" id="site-hours"></table></div></div>
+          <div class="btns">
+            <a class="btn btn-wa" data-bind-href="whatsapp" href="#" target="_blank" rel="noopener"><svg class="ic"><use href="#i-wa"/></svg>Escribir por WhatsApp</a>
+            <a class="btn btn-ghost" href="https://www.google.com/maps/search/?api=1&amp;query=Plaza+del+Sol+Ciudad+Ju%C3%A1rez" target="_blank" rel="noopener"><svg class="ic"><use href="#i-pin"/></svg>Cómo llegar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <a class="brand" href="/"><svg class="brand-mark" data-logo viewBox="0 0 48 48" aria-hidden="true"></svg><span class="brand-text"><span class="brand-name">VIDA ANIMAL II</span><span class="brand-sub">clínica veterinaria</span></span></a>
+      <div class="foot-links">
+        <a href="#servicios">Servicios</a>
+        <a href="#visitanos">Contacto</a>
+        <button data-open-chat="faq">Preguntas frecuentes</button>
+        <a href="/login">Acceso del personal</a>
+      </div>
+      <p class="foot-note">Prototipo académico. Ingeniería de Software, UACJ 2026.</p>
+    </div>
+  </footer>
+
+  <button class="chat-fab" data-open-chat="hola" id="chat-fab"><svg class="ic"><use href="#i-chat"/></svg>¿Te ayudamos?</button>
+  <aside class="chat" id="chat" aria-label="Asistente de citas">
+    <div class="chat-head">
+      <div class="chat-av"><svg data-logo viewBox="0 0 48 48" aria-hidden="true"></svg></div>
+      <div><h3>Asistente Vida Animal</h3><small>En línea</small></div>
+      <button class="chat-x" id="chat-x" aria-label="Cerrar chat"><svg class="ic"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="chat-body" id="chat-body" aria-live="polite"></div>
+    <form class="chat-foot" id="chat-form">
+      <label for="chat-in" class="sr">Escribe un mensaje</label>
+      <input id="chat-in" autocomplete="off" maxlength="300" placeholder="Escribe tu mensaje…">
+      <button class="chat-send" aria-label="Enviar"><svg class="ic"><use href="#i-send"/></svg></button>
+    </form>
+  </aside>
+</div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-paw" viewBox="0 0 24 24"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.05Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M9 10c.5 2 2.5 4 5 5"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-steth" viewBox="0 0 24 24"><path d="M5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 12 0V4a2 2 0 0 0-2-2h-1"/><path d="M8 15v1a6 6 0 0 0 12 0v-4"/><circle cx="20" cy="10" r="2"/></symbol>
+  <symbol id="i-syr" viewBox="0 0 24 24"><path d="m18 2 4 4M17 7l3-3M19 9 8.7 19.3a2.4 2.4 0 0 1-3.4 0l-.6-.6a2.4 2.4 0 0 1 0-3.4L15 5M9 11l4 4M5 19l-3 3M14 4l6 6"/></symbol>
+  <symbol id="i-scis" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+  <symbol id="i-bed" viewBox="0 0 24 24"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></symbol>
+  <symbol id="i-pill" viewBox="0 0 24 24"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7ZM8.5 8.5l7 7"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/></symbol>
+  <symbol id="i-feather" viewBox="0 0 24 24"><path d="M20.2 12.2a6 6 0 0 0-8.5-8.5L5 10.5V19h8.5z"/><path d="M16 8 2 22M17.5 15H9"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></symbol>
+  <symbol id="i-house" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M12 17c-2-1.6-3.2-2.6-3.2-3.8a1.6 1.6 0 0 1 3.2-.4 1.6 1.6 0 0 1 3.2.4c0 1.2-1.2 2.2-3.2 3.8z"/></symbol>
+  <symbol id="i-bird" viewBox="0 0 24 24"><path d="M16 7h.01M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20"/><path d="m20 7 2 .5-2 .5M10 18v3M14 17.75V21M7 18a6 6 0 0 0 3.84-10.61"/></symbol>
+</svg>
+</body>
+</html>
