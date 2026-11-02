@@ -1,0 +1,65 @@
+{% extends "panel/base.html" %}
+{% from "_macros.html" import ic, csrf %}
+{% block vista %}
+<div class="toolbar"><div class="tb-r"><button class="btn btn-purple" type="button" data-modal="m-usuario-nuevo">{{ ic("i-plus") }}Agregar usuario</button></div></div>
+<div class="panel table-wrap" style="margin-bottom:20px">
+  <table class="t"><thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Último acceso</th><th>Acceso activo</th><th></th></tr></thead>
+  <tbody>
+    {% for u in usuarios %}
+    <tr class="{{ '' if u.activo else 'cx' }}">
+      <td><div style="display:flex;gap:10px;align-items:center"><span class="avatar" style="width:32px;height:32px;font-size:13px">{{ u.iniciales }}</span><b>{{ u.nombre }}</b>{% if u.id == yo.id %}<span class="src">(tú)</span>{% endif %}</div></td>
+      <td>{{ u.usuario }}{% if u.debe_cambiar_password %}<br><span class="src">Contraseña temporal</span>{% endif %}</td>
+      <td><span class="role {{ 'admin' if u.es_admin else 'op' }}">{{ u.rol_txt }}</span></td>
+      <td>{% if u.ultimo_acceso %}{{ u.ultimo_acceso.date()|fecha_corta }} {{ u.ultimo_acceso.year }}, {{ u.ultimo_acceso|hora }}{% else %}Sin acceso aún{% endif %}</td>
+      <td><form method="post" action="/panel/usuarios/{{ u.id }}/activo">{{ csrf(request) }}
+        <input class="sw" type="checkbox" role="switch" aria-label="Acceso de {{ u.nombre }}" {{ 'checked' if u.activo }}
+          {% if u.id == yo.id %}disabled title="No puedes desactivar tu propia cuenta"{% else %}data-autoenviar data-confirmar="{{ ('¿Desactivar el acceso de ' if u.activo else '¿Activar el acceso de ') ~ u.nombre ~ '?' }}"{% endif %}></form></td>
+      <td><div class="acts">
+        <button class="btn-icon" type="button" aria-label="Editar {{ u.nombre }}" title="Editar nombre y rol" data-modal="m-usuario" data-accion="/panel/usuarios/{{ u.id }}"
+          data-valores='{{ {"nombre": u.nombre, "rol": u.rol}|tojson }}'>{{ ic("i-edit") }}</button>
+        <button class="btn-icon" type="button" aria-label="Restablecer contraseña de {{ u.nombre }}" title="Restablecer contraseña" data-modal="m-password" data-accion="/panel/usuarios/{{ u.id }}/password"
+          data-valores='{{ {"ctx": u.nombre ~ " (" ~ u.usuario ~ ")"}|tojson }}'>{{ ic("i-lock") }}</button>
+      </div></td>
+    </tr>
+    {% endfor %}
+  </tbody></table>
+</div>
+<div class="panel">
+  <div class="panel-h"><h2>Permisos por rol</h2></div>
+  <div class="table-wrap"><table class="perm">
+    <thead><tr><th>Permiso</th><th>Administrador</th><th>Personal operativo</th></tr></thead>
+    <tbody>{% for nombre, admin, op in permisos %}<tr><td>{{ nombre }}</td>{% for v in (admin, op) %}<td class="{{ 'yes' if v else 'no' }}">{{ ic("i-check" if v else "i-x") }}<span class="sr">{{ "Sí" if v else "No" }}</span></td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}
+{% block modales %}
+<template id="m-usuario-nuevo" data-titulo="Agregar usuario">
+  <form method="post" action="/panel/usuarios">{{ csrf(request) }}
+    <div class="modal-b">
+      <div class="field"><label for="nu-n">Nombre completo</label><input id="nu-n" name="nombre" maxlength="120" placeholder="MVZ Nombre Apellido" required></div>
+      <div class="grid2"><div class="field"><label for="nu-u">Usuario</label><input id="nu-u" name="usuario" maxlength="40" placeholder="napellido" autocomplete="off" required></div>
+        <div class="field"><label for="nu-r">Rol</label><select id="nu-r" name="rol">{% for clave, nombre in roles.items()|reverse %}<option value="{{ clave }}">{{ nombre }}</option>{% endfor %}</select></div></div>
+      <div class="field"><label for="nu-p">Contraseña temporal</label><input id="nu-p" name="password" type="text" minlength="8" autocomplete="off" required><span class="hint">Mínimo 8 caracteres. La persona deberá cambiarla en su primer acceso.</span></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Agregar usuario</button></div>
+  </form>
+</template>
+<template id="m-usuario" data-titulo="Editar usuario">
+  <form method="post">{{ csrf(request) }}
+    <div class="modal-b">
+      <div class="field"><label for="eu-n">Nombre completo</label><input id="eu-n" name="nombre" maxlength="120" required></div>
+      <div class="field"><label for="eu-r">Rol</label><select id="eu-r" name="rol">{% for clave, nombre in roles.items() %}<option value="{{ clave }}">{{ nombre }}</option>{% endfor %}</select></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Guardar cambios</button></div>
+  </form>
+</template>
+<template id="m-password" data-titulo="Restablecer contraseña">
+  <form method="post">{{ csrf(request) }}
+    <div class="modal-b">
+      <div class="mini-ctx" data-fill="ctx"></div>
+      <div class="field"><label for="rp-p">Contraseña temporal</label><input id="rp-p" name="password" type="text" minlength="8" autocomplete="off" required><span class="hint">Mínimo 8 caracteres. Se cerrarán sus sesiones abiertas y deberá cambiarla al entrar.</span></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Restablecer</button></div>
+  </form>
+</template>
+{% endblock %}

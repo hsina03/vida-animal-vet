@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ic, marca, logo %}
+{% block titulo %}Vida Animal II · Clínica veterinaria en Plaza del Sol{% endblock %}
+{% block cuerpo %}
+<header class="site-head">
+  <div class="wrap">
+    {{ marca("/") }}
+    <nav class="site-nav" aria-label="Secciones">
+      <a href="#servicios" data-scroll>Servicios</a>
+      <a href="#como-agendar" data-scroll>Cómo agendar</a>
+      <a href="#nosotros" data-scroll>Nosotros</a>
+      <a href="#visitanos" data-scroll>Ubicación y contacto</a>
+    </nav>
+    <button class="btn btn-primary" type="button" data-open-chat="cita">{{ ic("i-cal") }}Agendar cita</button>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="inicio">
+  <svg class="pulse" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60 H520 l18 -34 l22 58 l20 -76 l18 52 H1440"/></svg>
+  <div class="wrap">
+    <div class="hero-copy">
+      <h1>Cuidamos a tu mascota en Plaza del Sol</h1>
+      <p class="hero-lead">Consultas, vacunas, cirugías, estética y hospedaje en un mismo lugar. Agenda tu cita en minutos con nuestro asistente, sin esperar respuesta por mensaje.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary" type="button" data-open-chat="cita">{{ ic("i-chat") }}Agendar con el asistente</button>
+        <a class="btn btn-ghost" href="#servicios" data-scroll>Ver servicios</a>
+      </div>
+      <div class="hero-meta">
+        <div>{{ ic("i-pin") }}Plaza del Sol, Ciudad Juárez</div>
+        <div>{{ ic("i-clock") }}<span>{{ horario_corto }}</span></div>
+      </div>
+    </div>
+    <div class="arch">
+      <img alt="Gatito y cachorro asomados" src="/static/img/hero.jpg">
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="servicios">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Todo lo que tu mascota necesita, en una sola visita</h2>
+      <p>Nuestro equipo de médicos veterinarios atiende desde la consulta de rutina hasta la hospitalización. Si no sabes qué servicio elegir, el asistente te orienta.</p>
+    </div>
+    <div class="svc-groups">
+      {% for grupo, servicios in grupos.items() %}
+      <div class="svc-group"><h3>{{ grupo }}</h3>
+        {% for s in servicios %}
+        <div class="svc"><div class="svc-ic">{{ ic(s.icono) }}</div><div><h4>{{ s.nombre }}</h4><p>{{ s.descripcion }}</p></div></div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="sec steps-sec" id="como-agendar">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Agenda tu cita en tres pasos</h2>
+      <p>El asistente está disponible a cualquier hora. Tu solicitud llega directo a la agenda de la clínica y te confirmamos por WhatsApp.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><h3>Abre el asistente</h3><p>Toca «Agendar cita» y dinos qué servicio necesitas. También puedes resolver dudas frecuentes.</p></div>
+      <div class="step"><h3>Elige día y horario</h3><p>Solo verás los horarios que siguen libres, así no hay cruces con otras citas.</p></div>
+      <div class="step"><h3>Recibe la confirmación</h3><p>Deja tu nombre, el de tu mascota y un teléfono. El personal confirma tu cita por WhatsApp.</p></div>
+    </div>
+    <button class="btn btn-primary" type="button" data-open-chat="cita">{{ ic("i-chat") }}Empezar ahora</button>
+  </div>
+</section>
+
+<section class="sec" id="nosotros">
+  <div class="wrap about">
+    <div>
+      <h2>Una clínica de barrio con atención de especialidad</h2>
+      <p class="about-q">«Brindamos servicios integrales para el cuidado y bienestar de las mascotas, con atención responsable, profesional y comprometida con la tranquilidad de sus familias.»</p>
+      <p style="color:var(--ink-2);margin-top:20px;max-width:52ch">Vida Animal II es la segunda sucursal de Vida Animal. Abrimos en Plaza del Sol para atender a más familias de Ciudad Juárez con el mismo equipo de médicos veterinarios.</p>
+    </div>
+    <div class="values">
+      <div class="value">{{ ic("i-heart") }}<div><h4>Confianza</h4><p>Te explicamos cada diagnóstico y tratamiento antes de empezar.</p></div></div>
+      <div class="value">{{ ic("i-shield") }}<div><h4>Trato responsable</h4><p>Seguimos protocolos claros en consulta, cirugía y hospitalización.</p></div></div>
+      <div class="value">{{ ic("i-paw") }}<div><h4>Atención personalizada</h4><p>Médicos veterinarios que conocen a cada paciente por su nombre.</p></div></div>
+      <div class="value">{{ ic("i-pulse") }}<div><h4>Mejora continua</h4><p>Actualizamos nuestros procesos para que agendar sea cada vez más fácil.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec visit" id="visitanos">
+  <div class="wrap">
+    <div class="sec-head"><h2>Visítanos en Plaza del Sol</h2><p>Estamos dentro de la plaza, con estacionamiento. Si tu mascota necesita atención urgente, escríbenos antes de llegar.</p></div>
+    <div class="visit-grid">
+      <div class="map">
+        <svg viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Mapa ilustrativo de Plaza del Sol">
+          <rect width="640" height="400" fill="#EFE6F6"/>
+          <g stroke="#fff" stroke-width="18" fill="none"><path d="M-10 120 H660"/><path d="M-10 300 H660"/><path d="M160 -10 V410"/><path d="M470 -10 V410"/></g>
+          <g stroke="#fff" stroke-width="8" fill="none" opacity=".8"><path d="M-10 210 H660"/><path d="M320 -10 V410"/></g>
+          <rect x="180" y="140" width="270" height="140" rx="12" fill="#E2D3EE"/>
+          <text x="315" y="268" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="14" font-weight="600" fill="#6B4391">Plaza del Sol</text>
+          <g transform="translate(315 196)"><circle r="34" fill="#9A2456" opacity=".15"/><path d="M0 18c-10-11-16-19-16-27a16 16 0 0 1 32 0c0 8-6 16-16 27z" fill="#9A2456"/><circle cy="-9" r="6" fill="#fff"/></g>
+        </svg>
+      </div>
+      <div class="contact">
+        <div class="contact-row">{{ ic("i-pin") }}<div><b>Dirección</b><span>{{ contacto.direccion }}</span></div></div>
+        <div class="contact-row">{{ ic("i-phone") }}<div><b>Teléfono y WhatsApp</b><span><a href="tel:+52{{ contacto.telefono_digitos }}" style="text-decoration:none">{{ contacto.telefono }}</a></span></div></div>
+        <div class="contact-row">{{ ic("i-clock") }}<div><b>Horario</b>
+          <table class="hours">{% for dias, horas in horario %}<tr><td>{{ dias }}</td><td>{{ horas }}</td></tr>{% endfor %}</table></div></div>
+        <div class="btns">
+          <a class="btn btn-wa" href="{{ contacto.whatsapp_url }}" target="_blank" rel="noopener">{{ ic("i-wa") }}Escribir por WhatsApp</a>
+          <a class="btn btn-ghost" href="{{ contacto.mapa_url }}" target="_blank" rel="noopener">{{ ic("i-pin") }}Cómo llegar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    {{ marca("/") }}
+    <div class="foot-links">
+      <a href="#servicios" data-scroll>Servicios</a>
+      <a href="#visitanos" data-scroll>Contacto</a>
+      <button type="button" data-open-chat="faq">Preguntas frecuentes</button>
+      <a href="/login">Acceso del personal</a>
+    </div>
+    <p class="foot-note">Proyecto académico de Ingeniería de Software, UACJ 2026.</p>
+  </div>
+</footer>
+
+<button class="chat-fab" type="button" data-open-chat="hola" id="chat-fab">{{ ic("i-chat") }}¿Te ayudamos?</button>
+<aside class="chat" id="chat" aria-label="Asistente de citas">
+  <div class="chat-head">
+    <div class="chat-av">{{ logo("") }}</div>
+    <div><h3>Asistente Vida Animal</h3><small>En línea</small></div>
+    <button class="chat-x" id="chat-x" type="button" aria-label="Cerrar chat">{{ ic("i-x") }}</button>
+  </div>
+  <div class="chat-body" id="chat-body" aria-live="polite"></div>
+  <form class="chat-foot" id="chat-form">
+    <label for="chat-in" class="sr">Escribe un mensaje</label>
+    <input id="chat-in" autocomplete="off" maxlength="500" placeholder="Escribe tu mensaje…">
+    <button class="chat-send" aria-label="Enviar">{{ ic("i-send") }}</button>
+  </form>
+</aside>
+{% endblock %}
+{% block scripts %}<script src="/static/js/sitio.js?v=1"></script>{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "panel/base.html" %}
+{% from "_macros.html" import ic, badge, icono_mascota %}
+{% from "panel/_cita_macros.html" import botones_cita with context %}
+{% block vista %}
+<div class="kpis">
+  <a class="kpi" href="/panel/citas"><span class="kpi-ic">{{ ic("i-cal") }}</span><div><b>{{ activas_hoy }}</b><span>Citas hoy</span></div></a>
+  <a class="kpi warn-k" href="#por-confirmar"><span class="kpi-ic">{{ ic("i-clock") }}</span><div><b>{{ total_por_confirmar }}</b><span>Por confirmar</span></div></a>
+  <a class="kpi" href="/panel/solicitudes"><span class="kpi-ic">{{ ic("i-chat") }}</span><div><b>{{ pedidas_chat }}</b><span>Citas pedidas por chat</span></div></a>
+  <a class="kpi alert-k" href="/panel/solicitudes"><span class="kpi-ic">{{ ic("i-alert") }}</span><div><b>{{ atencion|length }}</b><span>Requieren atención</span></div></a>
+</div>
+<div class="dash">
+  <div style="display:grid;gap:20px">
+    <div class="panel">
+      <div class="panel-h"><h2>Agenda de hoy</h2><div class="sp"><a class="btn btn-ghost btn-sm" href="/panel/citas">Ver todas las citas</a></div></div>
+      <ul class="tl">
+        {% for c in citas_hoy %}
+        <li class="{{ 'now' if c.id == actual }}"><time>{{ c.inicio|hora }}</time>
+          <div class="who"><b>{{ c.mascota.nombre }}</b> <span class="src">{{ icono_mascota(c.mascota.especie) }}{{ c.mascota.especie }}</span><small>{{ c.servicio.nombre }} con {{ c.propietario.nombre }}</small></div>
+          {{ badge(c.estado, c.estado_txt) }}</li>
+        {% else %}
+        <li class="empty" style="display:block">{{ ic("i-cal") }}<h3>Sin citas para hoy</h3><p>Las citas que se registren para hoy aparecerán aquí.</p></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="panel" id="por-confirmar">
+      <div class="panel-h"><h2>Citas por confirmar</h2>{% if total_por_confirmar > por_confirmar|length %}<div class="sp"><span class="src">Mostrando las {{ por_confirmar|length }} más próximas</span></div>{% endif %}</div>
+      <div class="table-wrap"><table class="t"><tbody>
+        {% for c in por_confirmar %}
+        <tr><td class="num">{{ c.inicio.date()|fecha_corta }}, {{ c.inicio|hora }}</td>
+          <td><b>{{ c.mascota.nombre }}</b><br><span class="src">{{ c.servicio.nombre }}</span></td>
+          <td>{{ c.propietario.nombre }}<br><span class="src">{{ c.propietario.telefono|telefono }}</span></td>
+          <td>{{ badge(c.estado, c.estado_txt) }}</td>
+          <td>{{ botones_cita(c, puede_citas, compacto=True) }}</td></tr>
+        {% else %}
+        <tr><td><div class="empty">{{ ic("i-check") }}<h3>Todo confirmado</h3><p>No hay citas esperando confirmación.</p></div></td></tr>
+        {% endfor %}
+      </tbody></table></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h2>Requieren atención</h2></div>
+    <ul class="attn">
+      {% for s in atencion %}
+      <li><div style="display:flex;gap:8px;align-items:center"><b>{{ s.nombre_contacto or "Sin nombre" }}</b>{{ badge(s.estado, s.estado_txt) }}<span class="src" style="margin-left:auto">{{ s.folio }}</span></div>
+        <p>{{ s.motivo }}{% if s.mascota_txt %} · {{ s.mascota_txt }}{% endif %}</p>
+        <a class="btn btn-ghost btn-sm" href="/panel/solicitudes?sel={{ s.id }}">Atender</a></li>
+      {% else %}
+      <li class="empty">{{ ic("i-check") }}<h3>Todo al día</h3><p>No hay conversaciones esperando al personal.</p></li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
+{% block modales %}{% include "panel/_modales_cita.html" %}{% endblock %}
