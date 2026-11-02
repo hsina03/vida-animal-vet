@@ -1,0 +1,4 @@
+Migraciones de la base de datos (Alembic).
+
+Aplicar:        alembic upgrade head
+Crear nueva:    alembic revision --autogenerate -m "descripcion"
