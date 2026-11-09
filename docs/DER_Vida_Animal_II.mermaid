@@ -1,0 +1,65 @@
+erDiagram
+    ROL ||--o{ USUARIO : "tiene"
+    PROPIETARIO ||--o{ MASCOTA : "posee"
+    MASCOTA ||--o{ CITA : "recibe"
+    SERVICIO ||--o{ CITA : "se agenda en"
+    CATEGORIA_SERVICIO ||--o{ SERVICIO : "agrupa"
+    USUARIO |o--o{ CITA : "atiende (opcional)"
+
+    ROL {
+        int id_rol PK
+        string nombre
+    }
+    USUARIO {
+        int id_usuario PK
+        int id_rol FK
+        string nombre_usuario UK
+        string nombre
+        string contrasena_hash
+        boolean activo
+    }
+    PROPIETARIO {
+        int id_propietario PK
+        string nombre
+        string whatsapp
+        string correo "opcional"
+        date fecha_registro
+    }
+    MASCOTA {
+        int id_mascota PK
+        int id_propietario FK
+        string nombre
+        string especie
+        string raza "opcional"
+        int edad "opcional, en anios"
+        string sexo "opcional"
+        decimal peso "opcional"
+    }
+    CATEGORIA_SERVICIO {
+        int id_categoria PK
+        string nombre
+    }
+    SERVICIO {
+        int id_servicio PK
+        int id_categoria FK
+        string nombre
+        boolean publicado
+    }
+    CITA {
+        int id_cita PK
+        int id_mascota FK
+        int id_servicio FK
+        int id_usuario FK "opcional"
+        date fecha
+        time hora
+        string estado "pendiente, confirmada, atendida, cancelada"
+        string tipo "normal, urgencia"
+        datetime fecha_creacion
+    }
+    HORARIO_ATENCION {
+        int id_horario PK
+        string dia_semana UK
+        boolean activo
+        time hora_apertura
+        time hora_cierre
+    }
