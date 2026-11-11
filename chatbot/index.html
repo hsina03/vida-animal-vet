@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#246653">
+  <title>Asistente virtual | Vida Animal II</title>
+  <link rel="stylesheet" href="chatbot.css">
+  <script src="chatbot-faq.js" defer></script>
+  <script src="chatbot-citas.js" defer></script>
+  <script src="chatbot.js" defer></script>
+</head>
+<body>
+  <!-- Esta página sirve para probar el widget antes de integrarlo en otra web. -->
+  <main class="va-demo">
+    <a class="va-demo__brand" href="./index.html" aria-label="Vida Animal II, inicio">
+      <span class="va-demo__brand-icon" aria-hidden="true">✚</span>
+      <span>Vida Animal <strong>II</strong><small>CLÍNICA VETERINARIA</small></span>
+    </a>
+    <section class="va-demo__intro" aria-labelledby="demo-title">
+      <p class="va-demo__eyebrow">SUCURSAL PLAZA DEL SOL · CIUDAD JUÁREZ</p>
+      <h1 id="demo-title">Su bienestar,<br>nuestra razón de ser.</h1>
+      <p>Un espacio de cuidado para quienes siempre están a tu lado.</p>
+      <button class="va-demo__button" type="button" data-va-open>Conoce a nuestro asistente <span aria-hidden="true">↗</span></button>
+      <p class="va-demo__note">Chatbot en desarrollo · Etapa 4</p>
+    </section>
+    <div class="va-demo__decoration" aria-hidden="true">♡<span>cuidado que acompaña</span></div>
+    <footer class="va-demo__footer">Vida Animal II <span>Atención cercana, desde el primer mensaje.</span></footer>
+  </main>
+
+  <!-- Widget independiente: sus estilos y selectores están limitados a #va-chatbot. -->
+  <div id="va-chatbot">
+    <svg class="va-icons" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <symbol id="va-paw" viewBox="0 0 24 24"><ellipse cx="7" cy="7" rx="2" ry="3"/><ellipse cx="17" cy="7" rx="2" ry="3"/><ellipse cx="3" cy="12" rx="1.8" ry="2.5"/><ellipse cx="21" cy="12" rx="1.8" ry="2.5"/><path d="M6 19c0-3 3-7 6-7s6 4 6 7c0 4-4 1-6 1s-6 3-6-1Z"/></symbol>
+      <symbol id="va-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="3"/><path d="M8 3v4m8-4v4M4 11h16m-12 4h3m-3 3h6"/></symbol>
+      <symbol id="va-heart" viewBox="0 0 24 24"><path d="m12 21-8-8C-2 6 7-1 12 6c5-7 14 0 8 7Z"/><path d="M6 12h3l2-4 2 8 2-4h3"/></symbol>
+      <symbol id="va-tag" viewBox="0 0 24 24"><path d="M3 4h9l9 9-9 9-9-9Z"/><circle cx="8" cy="9" r="1"/></symbol>
+      <symbol id="va-pin" viewBox="0 0 24 24"><path d="M19 10c0 5-7 12-7 12S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+      <symbol id="va-bag" viewBox="0 0 24 24"><path d="M5 8h14l1 13H4L5 8Zm3 0V6a4 4 0 0 1 8 0v2"/></symbol>
+      <symbol id="va-chat" viewBox="0 0 24 24"><path d="M21 11a9 9 0 0 1-9 9H4l-2 2V11a9 9 0 0 1 19 0Z"/><path d="M7 10h10M7 14h6"/></symbol>
+      <symbol id="va-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 5 2c-2 1-2 2-2 3m0 3h.01"/></symbol>
+    </svg>
+
+    <section class="va-window" id="va-chat-window" role="dialog" aria-modal="false" aria-labelledby="va-chat-title" aria-describedby="va-chat-description" hidden>
+      <header class="va-header">
+        <span class="va-avatar" aria-hidden="true"><svg class="va-icon va-icon--paw"><use href="#va-paw"/></svg></span>
+        <div class="va-header__text"><h2 id="va-chat-title">Asistente Vida Animal</h2><p id="va-chat-description">Estamos para orientarte</p></div>
+        <button class="va-close" type="button" aria-label="Cerrar conversación"><svg class="va-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </header>
+
+      <div class="va-content">
+        <p class="va-date">VIDA ANIMAL II · PLAZA DEL SOL</p>
+        <div class="va-transcript" role="log" aria-label="Mensajes de la conversación" aria-live="polite" aria-relevant="additions">
+        <div class="va-message-row">
+          <span class="va-mini-avatar" aria-hidden="true"><svg class="va-icon va-icon--paw"><use href="#va-paw"/></svg></span>
+          <div class="va-message va-message--bot">
+            <p>¡Hola! <span aria-hidden="true">🐾</span> Te damos la bienvenida a <strong>Vida Animal II.</strong></p>
+            <p>Soy tu asistente virtual. Estoy aquí para ayudarte a cuidar a tu compañero de vida.</p>
+          </div>
+        </div>
+        </div>
+        <div class="va-actions" role="group" aria-label="Opciones para continuar" hidden></div>
+        <div class="va-typing" role="status" hidden>
+          <span aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>El asistente está respondiendo…</span>
+        </div>
+        <div class="va-menu-area" id="va-main-menu">
+          <p class="va-menu-title">¿En qué podemos ayudarte?</p>
+          <nav class="va-menu" aria-label="Opciones del asistente">
+            <button class="va-option va-option--primary" type="button" data-va-option="Agendar una cita"><svg class="va-icon" aria-hidden="true"><use href="#va-calendar"/></svg><span>Agendar una cita<small>El primer paso para su cuidado</small></span><span class="va-arrow" aria-hidden="true">↗</span></button>
+            <button class="va-option" type="button" data-va-option="Consultar servicios"><svg class="va-icon" aria-hidden="true"><use href="#va-heart"/></svg><span>Servicios</span><span class="va-arrow" aria-hidden="true">›</span></button>
+            <button class="va-option" type="button" data-va-option="Consultar precios"><svg class="va-icon" aria-hidden="true"><use href="#va-tag"/></svg><span>Precios</span><span class="va-arrow" aria-hidden="true">›</span></button>
+            <button class="va-option" type="button" data-va-option="Horarios y ubicación"><svg class="va-icon" aria-hidden="true"><use href="#va-pin"/></svg><span>Horarios y ubicación</span><span class="va-arrow" aria-hidden="true">›</span></button>
+            <button class="va-option" type="button" data-va-option="Información de productos"><svg class="va-icon" aria-hidden="true"><use href="#va-bag"/></svg><span>Productos</span><span class="va-arrow" aria-hidden="true">›</span></button>
+            <button class="va-option" type="button" data-va-option="Contactar al personal"><svg class="va-icon" aria-hidden="true"><use href="#va-chat"/></svg><span>Contactar al personal</span><span class="va-arrow" aria-hidden="true">›</span></button>
+            <button class="va-option" type="button" data-va-option="Preguntas frecuentes"><svg class="va-icon" aria-hidden="true"><use href="#va-help"/></svg><span>Preguntas frecuentes</span><span class="va-arrow" aria-hidden="true">›</span></button>
+          </nav>
+          <p class="va-preview">Puedes preguntar «¿vacunan perros?» o «¿cuánto cuesta una consulta?». Escribe «menú» para ver las opciones.</p>
+        </div>
+      </div>
+
+      <footer class="va-composer">
+        <p class="va-flow-status" role="status" hidden></p>
+        <button class="va-menu-toggle" type="button" aria-controls="va-main-menu" aria-expanded="true">Menú principal</button>
+        <p class="va-appointment-note">Prueba con datos ficticios. No se envían ni registran citas.</p>
+        <form class="va-input-row" aria-label="Enviar un mensaje">
+          <label class="va-sr-only" for="va-message-input">Mensaje para el asistente</label>
+          <input id="va-message-input" name="mensaje" type="text" placeholder="Escribe tu mensaje…" maxlength="500" autocomplete="off" aria-describedby="va-input-help" required>
+          <button class="va-send" type="submit" aria-label="Enviar mensaje"><svg class="va-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 16-7-7 16-2-7-7-2Zm7 2 9-9"/></svg></button>
+        </form>
+        <p class="va-powered" id="va-input-help">Con cuidado y cercanía <span aria-hidden="true">♡</span> Vida Animal II</p>
+      </footer>
+    </section>
+
+    <button class="va-launcher" type="button" aria-label="Abrir asistente de Vida Animal II" aria-expanded="false" aria-controls="va-chat-window"><svg class="va-icon va-icon--paw" aria-hidden="true"><use href="#va-paw"/></svg><span class="va-launcher__label">¿Te ayudamos?</span></button>
+  </div>
+</body>
+</html>
