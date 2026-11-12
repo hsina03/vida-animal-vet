@@ -1,0 +1,23 @@
+{# Botones de acción de una cita. Importar con: {% from "panel/_cita_macros.html" import botones_cita with context %} #}
+{% from "_macros.html" import ic, csrf %}
+
+{% macro botones_cita(c, puede, compacto=False) %}
+{%- set ctx = c.mascota.nombre ~ ", " ~ c.servicio.nombre ~ ". " ~ (c.inicio.date()|fecha_larga(False)) ~ ", " ~ (c.inicio|hora) ~ ". " ~ c.propietario.nombre -%}
+{%- set aviso = "Hola " ~ c.propietario.nombre.split()[0] ~ ", te escribimos de Vida Animal II sobre la cita de " ~ c.mascota.nombre ~ " del " ~ (c.inicio.date()|fecha_larga(False)|lower) ~ " a las " ~ (c.inicio|hora) ~ "." -%}
+<div class="acts">
+  {% if puede.puede_confirmar(c) %}
+  <form class="inline" method="post" action="/panel/citas/{{ c.id }}/confirmar">{{ csrf(request) }}<input type="hidden" name="volver_a" value="{{ url_actual(request) }}"><button class="btn btn-ghost btn-sm">Confirmar</button></form>
+  {% endif %}
+  {% if puede.puede_atender(c) and not compacto %}
+  <form class="inline" method="post" action="/panel/citas/{{ c.id }}/atendida">{{ csrf(request) }}<input type="hidden" name="volver_a" value="{{ url_actual(request) }}"><button class="btn-icon" title="Marcar como atendida" aria-label="Marcar como atendida">{{ ic("i-check") }}</button></form>
+  {% endif %}
+  {% if puede.puede_modificar(c) %}
+  <button type="button" class="btn-icon" title="Reprogramar" aria-label="Reprogramar" data-modal="m-reprogramar"
+    data-accion="/panel/citas/{{ c.id }}/reprogramar"
+    data-valores='{{ {"ctx": "Actual: " ~ ctx, "servicio_id": c.servicio_id, "excluir": c.id, "fecha": c.inicio.date().isoformat()}|tojson }}'>{{ ic("i-edit") }}</button>
+  <button type="button" class="btn-icon" title="Cancelar" aria-label="Cancelar" data-modal="m-cancelar"
+    data-accion="/panel/citas/{{ c.id }}/cancelar"
+    data-valores='{{ {"ctx": ctx, "wa": wa_url(c.propietario.telefono, aviso)}|tojson }}'>{{ ic("i-x") }}</button>
+  {% endif %}
+</div>
+{% endmacro %}

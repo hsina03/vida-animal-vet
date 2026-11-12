@@ -1,0 +1,9 @@
+Prototipo de Vida Animal II (sitio público y panel administrativo)
+
+vida-animal-prototipo.html  Prototipo interactivo completo. Ábrelo con doble clic en el navegador.
+                            Ya trae la imagen del inicio incluida, así que funciona sin la carpeta img.
+img/hero.jpg                Foto del inicio del sitio, por si la necesitas por separado.
+img/logo.svg                Logo con los colores del sistema.
+capturas/                   Imagen de cada pantalla, en el mismo orden que el archivo de Figma
+                            "Vida Animal II — Wireframes y prototipo" (01 a 10: alta fidelidad,
+                            11 y 12: wireframes, 13: vista en celular).

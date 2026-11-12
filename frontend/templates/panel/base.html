@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ic, marca, csrf %}
+{% block titulo %}{{ titulo }} · Panel Vida Animal II{% endblock %}
+{% block cuerpo %}
+<div class="admin-layout" data-csrf="{{ csrf_token(request) }}">
+  <aside class="side">
+    {{ marca("/panel", "panel de la clínica") }}
+    <div class="side-label">Operación diaria</div>
+    <a class="nav-item {{ 'on' if seccion == 'inicio' }}" href="/panel">{{ ic("i-home") }}Inicio</a>
+    <a class="nav-item {{ 'on' if seccion == 'citas' }}" href="/panel/citas">{{ ic("i-cal") }}Citas</a>
+    <a class="nav-item {{ 'on' if seccion == 'solicitudes' }}" href="/panel/solicitudes">{{ ic("i-chat") }}Solicitudes del chat{% if solicitudes_abiertas %}<span class="count">{{ solicitudes_abiertas }}</span>{% endif %}</a>
+    <a class="nav-item {{ 'on' if seccion == 'propietarios' }}" href="/panel/propietarios">{{ ic("i-paw") }}Propietarios y mascotas</a>
+    <div class="side-label">Configuración</div>
+    <a class="nav-item {{ 'on' if seccion == 'horarios' }}" href="/panel/horarios">{{ ic("i-clock") }}Horarios y disponibilidad</a>
+    {% if yo.es_admin %}
+    <a class="nav-item {{ 'on' if seccion == 'contenido' }}" href="/panel/contenido">{{ ic("i-globe") }}Contenido del sitio</a>
+    <a class="nav-item {{ 'on' if seccion == 'usuarios' }}" href="/panel/usuarios">{{ ic("i-users") }}Usuarios y roles</a>
+    {% endif %}
+    <div class="side-foot">
+      <a class="nav-item" href="/" target="_blank" rel="noopener">{{ ic("i-globe") }}Ver sitio público</a>
+      <a class="nav-item" href="/panel/cambiar-password">{{ ic("i-lock") }}Cambiar contraseña</a>
+      <form method="post" action="/logout">{{ csrf(request) }}<button class="nav-item">{{ ic("i-out") }}Cerrar sesión</button></form>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <h1>{{ titulo }}</h1><span class="date">{{ hoy|fecha_larga }}</span>
+      <div class="me"><div class="avatar">{{ yo.iniciales }}</div><div><b>{{ yo.nombre }}</b><span class="role {{ 'admin' if yo.es_admin else 'op' }}">{{ yo.rol_txt }}</span></div></div>
+    </header>
+    <section class="view">
+      {% for f in flash if f.tipo != "ok" %}
+      <div class="alert on" role="alert">{{ ic("i-alert") }}<span>{{ f.texto }}</span></div>
+      {% endfor %}
+      {% block vista %}{% endblock %}
+    </section>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title" id="modal"></div></div>
+<div class="toast" id="toast" role="status">{{ ic("i-check") }}<span></span></div>
+{% for f in flash if f.tipo == "ok" %}<div hidden class="flash-ok" data-texto="{{ f.texto }}"></div>{% endfor %}
+{% block modales %}{% endblock %}
+{% endblock %}
+{% block scripts %}<script src="/static/js/panel.js?v=1"></script>{% endblock %}
