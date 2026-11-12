@@ -1,0 +1,67 @@
+{# Ventanas para registrar, reprogramar y cancelar citas. Las abre panel.js. #}
+{% from "_macros.html" import ic, csrf %}
+
+<template id="m-nueva" data-titulo="Nueva cita">
+  <form method="post" action="/panel/citas" data-con-horario>
+    {{ csrf(request) }}<input type="hidden" name="volver_a" value="{{ url_actual(request) }}">
+    <div class="modal-b">
+      {% if propietarios %}
+      <div class="grid2">
+        <div class="field"><label for="na-o">Propietario</label>
+          <select id="na-o" name="propietario_id" data-mascotas="#na-p" required>
+            {% for p in propietarios %}<option value="{{ p.id }}">{{ p.nombre }} · {{ p.telefono|telefono }}</option>{% endfor %}
+          </select></div>
+        <div class="field"><label for="na-p">Mascota</label><select id="na-p" name="mascota_id" required></select></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="na-s">Servicio</label>
+          <select id="na-s" name="servicio_id" data-horario>
+            {% for s in servicios_agendables %}<option value="{{ s.id }}">{{ s.nombre }} ({{ s.duracion_min }} min)</option>{% endfor %}
+          </select></div>
+        <div class="field"><label for="na-d">Día</label><input id="na-d" type="date" name="fecha" data-horario required></div>
+      </div>
+      <div class="field" style="margin-bottom:8px"><label>Horario</label></div>
+      <div class="alert" data-error-horario role="alert">{{ ic("i-alert") }}<span></span></div>
+      <div class="slots" data-slots></div>
+      <input type="hidden" name="hora">
+      <div class="field" style="margin-top:16px"><label for="na-n">Notas (opcional)</label><textarea id="na-n" name="notas" rows="2" maxlength="500"></textarea></div>
+      {% else %}
+      <p>Primero registra al propietario y su mascota en <a href="/panel/propietarios">Propietarios y mascotas</a>.</p>
+      {% endif %}
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button>
+      {% if propietarios %}<button class="btn btn-purple">{{ ic("i-check") }}Registrar cita</button>{% endif %}</div>
+  </form>
+</template>
+
+<template id="m-reprogramar" data-titulo="Reprogramar cita">
+  <form method="post" data-con-horario>
+    {{ csrf(request) }}<input type="hidden" name="volver_a" value="{{ url_actual(request) }}">
+    <input type="hidden" name="servicio_id" data-horario><input type="hidden" name="excluir">
+    <div class="modal-b">
+      <div class="mini-ctx" data-fill="ctx"></div>
+      <div class="field"><label for="rp-d">Nuevo día</label><input id="rp-d" type="date" name="fecha" data-horario required></div>
+      <div class="field" style="margin-bottom:8px"><label>Horario</label></div>
+      <div class="alert" data-error-horario role="alert">{{ ic("i-alert") }}<span></span></div>
+      <div class="slots" data-slots></div>
+      <input type="hidden" name="hora">
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button>
+      <button class="btn btn-purple">{{ ic("i-check") }}Guardar cambio</button></div>
+  </form>
+</template>
+
+<template id="m-cancelar" data-titulo="Cancelar cita">
+  <form method="post">
+    {{ csrf(request) }}<input type="hidden" name="volver_a" value="{{ url_actual(request) }}">
+    <div class="modal-b">
+      <div class="mini-ctx" data-fill="ctx"></div>
+      <div class="field"><label for="cx-m">Motivo de la cancelación</label>
+        <select id="cx-m" name="motivo">{% for m in motivos %}<option>{{ m }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="cx-d">Detalle (opcional; obligatorio si elegiste «Otro»)</label><input id="cx-d" name="detalle" maxlength="150"></div>
+      <a class="btn btn-wa btn-sm" data-href="wa" target="_blank" rel="noopener">{{ ic("i-wa") }}Avisar al propietario por WhatsApp</a>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Conservar cita</button>
+      <button class="btn btn-danger">Cancelar cita</button></div>
+  </form>
+</template>

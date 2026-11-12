@@ -1,0 +1,88 @@
+{% extends "panel/base.html" %}
+{% from "_macros.html" import ic, badge, csrf, icono_mascota %}
+{% block vista %}
+<div class="toolbar">
+  <form class="search" method="get" action="/panel/propietarios" role="search" data-busqueda>
+    {{ ic("i-search") }}<label for="o-search" class="sr">Buscar</label>
+    <input id="o-search" name="q" value="{{ q }}" placeholder="Buscar por propietario, mascota o teléfono" autocomplete="off" {{ 'autofocus' if q }}>
+  </form>
+  <div class="tb-r"><button class="btn btn-purple" type="button" data-modal="m-propietario-nuevo">{{ ic("i-plus") }}Registrar propietario</button></div>
+</div>
+<div class="owners">
+  <div class="panel"><ul class="olist">
+    {% for p in propietarios %}
+    <li><a href="/panel/propietarios?sel={{ p.id }}&q={{ q|urlencode }}" class="{{ 'on' if actual and p.id == actual.id }}"><span class="avatar">{{ p.iniciales }}</span><span><b>{{ p.nombre }}</b><small>{{ p.mascotas|map(attribute="nombre")|join(", ") }}{% if p.mascotas %}, {% endif %}{{ p.telefono|telefono }}</small></span></a></li>
+    {% else %}
+    <li class="empty">{{ ic("i-search") }}<h3>{% if q %}Sin resultados para «{{ q }}»{% else %}Aún no hay propietarios{% endif %}</h3><p>Revisa la ortografía o registra al propietario.</p></li>
+    {% endfor %}
+  </ul></div>
+
+  <div class="panel">
+    {% if actual %}
+    <div class="odetail-h"><span class="avatar">{{ actual.iniciales }}</span><div><h2>{{ actual.nombre }}</h2><span class="src">Cliente desde {{ tiempo.MESES[actual.creado.month - 1] }} de {{ actual.creado.year }}</span></div>
+      <div class="sp"><button class="btn btn-ghost btn-sm" type="button" data-modal="m-propietario" data-accion="/panel/propietarios/{{ actual.id }}"
+        data-valores='{{ {"nombre": actual.nombre, "telefono": actual.telefono|telefono, "correo": actual.correo}|tojson }}'>{{ ic("i-edit") }}Editar datos</button></div></div>
+    <div class="facts"><div><b>WhatsApp</b><a href="{{ wa_url(actual.telefono) }}" target="_blank" rel="noopener" style="text-decoration:none">{{ actual.telefono|telefono }}</a></div><div><b>Correo</b>{{ actual.correo or "—" }}</div><div><b>Citas registradas</b>{{ historial|length }}</div></div>
+    <div class="pets">
+      {% for m in actual.mascotas %}
+      <div class="pet"><span class="pet-ic">{{ icono_mascota(m.especie) }}</span><div><h4>{{ m.nombre }}</h4><dl><dt>Especie</dt><dd>{{ m.especie }}{% if m.raza %}, {{ m.raza }}{% endif %}</dd><dt>Edad</dt><dd>{{ m.edad or "—" }}</dd><dt>Sexo</dt><dd>{{ m.sexo or "—" }}</dd><dt>Peso</dt><dd>{{ m.peso or "—" }}</dd></dl></div>
+        <button class="btn-icon" type="button" aria-label="Editar {{ m.nombre }}" data-modal="m-mascota" data-titulo="Editar a {{ m.nombre }}" data-accion="/panel/mascotas/{{ m.id }}"
+          data-valores='{{ {"mascota_nombre": m.nombre, "mascota_especie": m.especie, "mascota_raza": m.raza, "mascota_edad": m.edad, "mascota_sexo": m.sexo, "mascota_peso": m.peso}|tojson }}'>{{ ic("i-edit") }}</button></div>
+      {% endfor %}
+      <button class="pet" type="button" style="background:none;border-style:dashed;cursor:pointer;place-items:center;grid-template-columns:1fr;color:var(--purple);font-weight:600" data-modal="m-mascota" data-titulo="Agregar mascota" data-accion="/panel/propietarios/{{ actual.id }}/mascotas">{{ ic("i-plus") }} Agregar mascota</button>
+    </div>
+    <h3 class="sub-h">Historial de citas</h3>
+    <div class="table-wrap" style="padding:10px 8px 8px"><table class="t"><tbody>
+      {% for c in historial %}
+      <tr class="{{ 'cx' if c.estado == 'cancelada' }}"><td class="num"><a href="/panel/citas?fecha={{ c.inicio.date().isoformat() }}&marcar={{ c.id }}" style="text-decoration:none">{{ c.inicio.date()|fecha_corta }} {{ c.inicio.year }}, {{ c.inicio|hora }}</a></td><td>{{ c.mascota.nombre }}</td><td>{{ c.servicio.nombre }}</td><td>{{ badge(c.estado, c.estado_txt) }}</td></tr>
+      {% else %}
+      <tr><td style="color:var(--ink-3)">Sin citas registradas.</td></tr>
+      {% endfor %}
+    </tbody></table></div>
+    {% else %}
+    <div class="empty">{{ ic("i-users") }}<h3>No hay un registro seleccionado</h3><p>Busca otro nombre o registra un propietario nuevo.</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block modales %}
+{% macro campos_mascota() %}
+<div class="grid2"><div class="field"><label for="ep-n">Nombre de la mascota</label><input id="ep-n" name="mascota_nombre" maxlength="60" required></div>
+  <div class="field"><label for="ep-e">Especie</label><select id="ep-e" name="mascota_especie">{% for e in especies %}<option>{{ e }}</option>{% endfor %}</select></div></div>
+<div class="grid2"><div class="field"><label for="ep-r">Raza</label><input id="ep-r" name="mascota_raza" maxlength="60"></div>
+  <div class="field"><label for="ep-ed">Edad</label><input id="ep-ed" name="mascota_edad" maxlength="30" placeholder="Ej. 2 años, 5 meses"></div></div>
+<div class="grid2"><div class="field"><label for="ep-s">Sexo</label><select id="ep-s" name="mascota_sexo"><option value="">Sin dato</option><option>Macho</option><option>Hembra</option></select></div>
+  <div class="field"><label for="ep-p">Peso</label><input id="ep-p" name="mascota_peso" maxlength="20" placeholder="Ej. 7 kg, 38 g"><span class="hint">Usa gramos para aves y especies pequeñas.</span></div></div>
+{% endmacro %}
+
+<template id="m-propietario-nuevo" data-titulo="Registrar propietario">
+  <form method="post" action="/panel/propietarios">{{ csrf(request) }}
+    <div class="modal-b">
+      <div class="field"><label for="eo-n">Nombre completo</label><input id="eo-n" name="nombre" maxlength="120" required></div>
+      <div class="grid2"><div class="field"><label for="eo-t">WhatsApp</label><input id="eo-t" name="telefono" inputmode="tel" placeholder="656 123 4567" required></div>
+        <div class="field"><label for="eo-m">Correo (opcional)</label><input id="eo-m" name="correo" type="email" maxlength="120"></div></div>
+      {{ campos_mascota() }}
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Registrar propietario</button></div>
+  </form>
+</template>
+
+<template id="m-propietario" data-titulo="Editar propietario">
+  <form method="post">{{ csrf(request) }}
+    <div class="modal-b">
+      <div class="field"><label for="eo-n2">Nombre completo</label><input id="eo-n2" name="nombre" maxlength="120" required></div>
+      <div class="grid2"><div class="field"><label for="eo-t2">WhatsApp</label><input id="eo-t2" name="telefono" inputmode="tel" required></div>
+        <div class="field"><label for="eo-m2">Correo (opcional)</label><input id="eo-m2" name="correo" type="email" maxlength="120"></div></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Guardar cambios</button></div>
+  </form>
+</template>
+
+<template id="m-mascota" data-titulo="Mascota">
+  <form method="post">{{ csrf(request) }}
+    <div class="modal-b">{{ campos_mascota() }}</div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Guardar</button></div>
+  </form>
+</template>
+{% endblock %}

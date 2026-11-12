@@ -1,0 +1,62 @@
+{% extends "panel/base.html" %}
+{% from "_macros.html" import ic, csrf %}
+{% block vista %}
+{% if solo_lectura %}<div class="readonly-note">{{ ic("i-shield") }}Solo el administrador puede cambiar horarios. Puedes consultarlos.</div>{% endif %}
+{% set des = 'disabled' if solo_lectura else '' %}
+<div class="sched">
+  <form class="panel" method="post" action="/panel/horarios" id="f-horarios">
+    {{ csrf(request) }}
+    <div class="panel-h"><h2>Horario de atención</h2><div class="sp"><span style="color:var(--ink-3);font-size:14px">Se muestra en el sitio y define los horarios del asistente</span></div></div>
+    {% for i, nombre, d in dias %}
+    <div class="day-row {{ '' if d and d.abierto else 'cerrado' }}" data-dia>
+      <b>{{ nombre|capitalize }}</b>
+      <input class="sw" type="checkbox" role="switch" name="abierto_{{ i }}" value="1" aria-label="Abrir el {{ nombre }}" {{ 'checked' if d and d.abierto }} {{ des }} data-alternar-dia>
+      <label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink-2)" data-horas>Abre
+        <select name="apertura_{{ i }}" {{ des }}>{% for h in horas %}<option value="{{ h|hora }}" {{ 'selected' if d and d.apertura == h or (not (d and d.apertura) and h.hour == 9 and h.minute == 0) }}>{{ h|hora }}</option>{% endfor %}</select></label>
+      <label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink-2)" data-horas>Cierra
+        <select name="cierre_{{ i }}" {{ des }}>{% for h in horas %}<option value="{{ h|hora }}" {{ 'selected' if d and d.cierre == h or (not (d and d.cierre) and h.hour == 15 and h.minute == 0) }}>{{ h|hora }}</option>{% endfor %}</select></label>
+      <span class="closed-t" data-cerrado>Cerrado. El asistente no ofrece horarios este día.</span>
+    </div>
+    {% endfor %}
+  </form>
+  <div style="display:grid;gap:20px">
+    <div class="panel">
+      <div class="panel-h"><h2>Reglas de agenda</h2></div>
+      <div class="panel-b kv">
+        <div class="field" style="margin:0"><label for="h-dur">Duración de cada espacio</label>
+          <select id="h-dur" name="espacio" form="f-horarios" {{ des }}>{% for e in espacios %}<option value="{{ e }}" {{ 'selected' if e == reglas.espacio_min }}>{{ e }} minutos</option>{% endfor %}</select>
+          <span class="hint">Un servicio largo ocupa varios espacios seguidos.</span></div>
+        <div class="field" style="margin:0"><label for="h-cap">Citas al mismo tiempo</label>
+          <select id="h-cap" name="cupo" form="f-horarios" {{ des }}>{% for c in cupos %}<option value="{{ c }}" {{ 'selected' if c == reglas.cupo }}>{{ c }}</option>{% endfor %}</select>
+          <span class="hint">Al llegar al límite, el horario deja de mostrarse en el asistente.</span></div>
+        <div class="field" style="margin:0"><label for="h-adv">Anticipación mínima para agendar</label>
+          <select id="h-adv" name="anticipacion" form="f-horarios" {{ des }}>{% for v, t in anticipaciones %}<option value="{{ v }}" {{ 'selected' if v == reglas.anticipacion_min }}>{{ t }}</option>{% endfor %}</select>
+          <span class="hint">Aplica a las citas que se piden por el asistente.</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h2>Días sin servicio</h2>{% if not solo_lectura %}<div class="sp"><button class="btn btn-ghost btn-sm" type="button" data-modal="m-dia">{{ ic("i-plus") }}Agregar</button></div>{% endif %}</div>
+      <div class="panel-b" style="padding-top:6px;padding-bottom:6px"><ul class="off-list">
+        {% for d in sin_servicio %}
+        <li>{{ ic("i-cal") }}<div><b>{{ d.fecha|fecha_larga }}</b></div><span>{{ d.motivo }}</span>
+          {% if not solo_lectura %}<form class="inline" method="post" action="/panel/horarios/dias-sin-servicio/{{ d.id }}/eliminar" data-confirmar="¿Quitar el {{ d.fecha|fecha_larga|lower }} de los días sin servicio?">{{ csrf(request) }}<button class="btn-icon" style="padding:4px;border:0" aria-label="Quitar">{{ ic("i-x") }}</button></form>{% endif %}</li>
+        {% else %}
+        <li style="color:var(--ink-3)">No hay días sin servicio próximos.</li>
+        {% endfor %}
+      </ul></div>
+    </div>
+    {% if not solo_lectura %}<button class="btn btn-purple" form="f-horarios" style="justify-self:end">{{ ic("i-check") }}Guardar horarios</button>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block modales %}
+<template id="m-dia" data-titulo="Agregar día sin servicio">
+  <form method="post" action="/panel/horarios/dias-sin-servicio">{{ csrf(request) }}
+    <div class="modal-b">
+      <div class="field"><label for="of-f">Fecha</label><input id="of-f" type="date" name="fecha" min="{{ hoy.isoformat() }}" required></div>
+      <div class="field"><label for="of-m">Motivo</label><input id="of-m" name="motivo" maxlength="120" placeholder="Ej. Día de la Virgen de Guadalupe"></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Agregar día</button></div>
+  </form>
+</template>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "panel/base.html" %}
+{% from "_macros.html" import ic, badge, csrf %}
+{% block vista %}
+<div class="toolbar">
+  <div class="seg">
+    <a class="{{ 'on' if filtro == 'abiertas' }}" href="/panel/solicitudes">Abiertas</a>
+    <a class="{{ 'on' if filtro == 'todas' }}" href="/panel/solicitudes?filtro=todas">Todas</a>
+  </div>
+  <p style="color:var(--ink-2);font-size:14.5px">Conversaciones del asistente que necesitan acción del personal.</p>
+</div>
+<div class="inbox">
+  <div class="panel"><ul class="ilist">
+    {% for s in solicitudes %}
+    <li><a href="/panel/solicitudes?sel={{ s.id }}&filtro={{ filtro }}" class="{{ 'on' if actual and s.id == actual.id }}">
+      <div class="r1"><b>{{ s.nombre_contacto or "Sin nombre" }}</b>{{ badge(s.estado, s.estado_txt) }}<small>{{ s.creado.date()|fecha_corta }}, {{ s.creado|hora }}</small></div>
+      <p>{% if s.tipo == "cita" and s.cita %}{{ ic("i-cal", "ic") }} Cita: {{ s.cita.servicio.nombre }}, {{ s.cita.inicio.date()|fecha_corta }} {{ s.cita.inicio|hora }}{% else %}{{ vistas.get(s.id, s.motivo) }}{% endif %}</p>
+    </a></li>
+    {% else %}
+    <li class="empty">{{ ic("i-check") }}<h3>Sin pendientes</h3><p>Las nuevas solicitudes del asistente aparecerán aquí.</p></li>
+    {% endfor %}
+  </ul></div>
+
+  <div class="panel">
+    {% if actual %}
+    <div class="panel-h"><h2>{{ "Solicitud de cita" if actual.tipo == "cita" else "Canalización al personal" }}</h2><span class="src">Folio {{ actual.folio }}</span>{{ badge(actual.estado, actual.estado_txt) }}</div>
+    <div class="ireq">
+      <div><b>Propietario</b>{{ actual.nombre_contacto or "Sin nombre" }}</div>
+      <div><b>WhatsApp</b>{{ actual.telefono|telefono or "No lo dejó" }}</div>
+      <div><b>Mascota</b>{{ actual.mascota_txt or "—" }}</div>
+      {% if actual.tipo == "cita" and actual.cita %}
+      <div><b>Horario pedido</b>{{ actual.cita.inicio.date()|fecha_corta }}, {{ actual.cita.inicio|hora }}<br><span class="src">{{ actual.cita.servicio.nombre }} · {{ actual.cita.estado_txt }}</span></div>
+      {% else %}
+      <div><b>Motivo</b>{{ actual.motivo }}</div>
+      {% endif %}
+    </div>
+    <div class="convo">
+      {% for m in mensajes or [] %}<div class="msg {{ 'bot' if m.autor == 'bot' else 'me' }}">{{ m.texto }}</div>{% else %}<p class="src">Sin conversación registrada.</p>{% endfor %}
+    </div>
+    <div class="iacts">
+      {% if actual.tipo == "cita" and actual.cita and puede.puede_confirmar(actual.cita) %}
+      <form class="inline" method="post" action="/panel/solicitudes/{{ actual.id }}/confirmar">{{ csrf(request) }}<button class="btn btn-purple">{{ ic("i-check") }}Confirmar cita</button></form>
+      {% endif %}
+      {% if actual.tipo == "cita" and actual.cita and puede.puede_modificar(actual.cita) %}
+      {% set c = actual.cita %}
+      <button type="button" class="btn btn-ghost" data-modal="m-reprogramar" data-accion="/panel/citas/{{ c.id }}/reprogramar"
+        data-valores='{{ {"ctx": "Actual: " ~ c.mascota.nombre ~ ", " ~ c.servicio.nombre ~ ". " ~ (c.inicio.date()|fecha_larga(False)) ~ ", " ~ (c.inicio|hora), "servicio_id": c.servicio_id, "excluir": c.id, "fecha": c.inicio.date().isoformat()}|tojson }}'>Proponer otro horario</button>
+      {% endif %}
+      {% if whatsapp %}<a class="btn btn-wa" href="{{ whatsapp }}" target="_blank" rel="noopener">{{ ic("i-wa") }}Atender por WhatsApp</a>{% endif %}
+      {% if actual.abierta %}
+      <form class="inline" method="post" action="/panel/solicitudes/{{ actual.id }}/resolver">{{ csrf(request) }}<button class="btn btn-ghost">{{ ic("i-check") }}Marcar como resuelta</button></form>
+      {% else %}
+      <span style="color:var(--ink-2);font-size:14.5px">Resuelta{% if actual.resuelta_por %} por {{ actual.resuelta_por.nombre }}{% endif %}{% if actual.resuelta_en %} el {{ actual.resuelta_en.date()|fecha_corta }}, {{ actual.resuelta_en|hora }}{% endif %}. No requiere más acciones.</span>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="empty">{{ ic("i-chat") }}<h3>Selecciona una conversación</h3><p>Aquí verás la conversación completa con el asistente.</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block modales %}{% include "panel/_modales_cita.html" %}{% endblock %}

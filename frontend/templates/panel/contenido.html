@@ -1,0 +1,65 @@
+{% extends "panel/base.html" %}
+{% from "_macros.html" import ic, csrf %}
+{% block vista %}
+<div class="cms">
+  <div class="panel">
+    <div class="panel-h"><h2>Servicios publicados</h2><div class="sp"><a class="btn btn-ghost btn-sm" href="/#servicios" target="_blank" rel="noopener">Ver en el sitio</a></div></div>
+    {% for s in servicios %}
+    <div class="cms-row"><span class="svc-ic" style="width:38px;height:38px">{{ ic(s.icono) }}</span>
+      <div class="grow"><b>{{ s.nombre }}</b><small>{{ s.grupo }} · {% if s.agendable %}{{ s.duracion_min }} min por cita{% else %}No se agenda por cita{% endif %}</small></div>
+      <button class="btn-icon" type="button" aria-label="Editar {{ s.nombre }}" data-modal="m-servicio" data-accion="/panel/contenido/servicios/{{ s.id }}"
+        data-valores='{{ {"nombre": s.nombre, "descripcion": s.descripcion, "duracion_min": s.duracion_min, "agendable": s.agendable}|tojson }}'>{{ ic("i-edit") }}</button>
+      <form method="post" action="/panel/contenido/servicios/{{ s.id }}/visible">{{ csrf(request) }}
+        <input class="sw" type="checkbox" role="switch" aria-label="Mostrar {{ s.nombre }} en el sitio" {{ 'checked' if s.visible }} data-autoenviar></form>
+    </div>
+    {% endfor %}
+  </div>
+  <div style="display:grid;gap:20px">
+    <div class="panel">
+      <div class="panel-h"><h2>Datos de contacto</h2></div>
+      <form class="panel-b" method="post" action="/panel/contenido/contacto">{{ csrf(request) }}
+        <div class="grid2"><div class="field"><label for="c-tel">Teléfono</label><input id="c-tel" name="telefono" value="{{ contacto.telefono }}" inputmode="tel" required></div>
+          <div class="field"><label for="c-wa">WhatsApp</label><input id="c-wa" name="whatsapp" value="{{ contacto.whatsapp }}" inputmode="tel" required></div></div>
+        <div class="field"><label for="c-dir">Dirección</label><input id="c-dir" name="direccion" value="{{ contacto.direccion }}" maxlength="200" required></div>
+        <div class="field"><label for="c-map">Enlace de Google Maps (opcional)</label><input id="c-map" name="mapa_url" value="{{ contacto.mapa_url }}" placeholder="https://maps.app.goo.gl/…"><span class="hint">Si lo dejas vacío, «Cómo llegar» busca la dirección en Google Maps.</span></div>
+        <button class="btn btn-purple btn-sm">{{ ic("i-check") }}Guardar contacto</button>
+      </form>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h2>Preguntas frecuentes del asistente</h2><div class="sp"><button class="btn btn-ghost btn-sm" type="button" data-modal="m-pregunta" data-titulo="Nueva pregunta" data-accion="/panel/contenido/preguntas" data-valores='{"visible": true}'>{{ ic("i-plus") }}Agregar</button></div></div>
+      {% for p in preguntas %}
+      <div class="faq" style="display:flex;gap:12px;align-items:flex-start"><div style="flex:1"><b>{{ p.pregunta }}{% if not p.visible %} <span class="badge b-canc">Oculta</span>{% endif %}</b><p>{{ p.respuesta }}</p></div>
+        <button class="btn-icon" type="button" aria-label="Editar pregunta" data-modal="m-pregunta" data-titulo="Editar pregunta" data-accion="/panel/contenido/preguntas/{{ p.id }}"
+          data-valores='{{ {"pregunta": p.pregunta, "respuesta": p.respuesta, "visible": p.visible}|tojson }}'>{{ ic("i-edit") }}</button>
+        <form class="inline" method="post" action="/panel/contenido/preguntas/{{ p.id }}/eliminar" data-confirmar="¿Eliminar esta pregunta del asistente?">{{ csrf(request) }}<button class="btn-icon" aria-label="Eliminar pregunta">{{ ic("i-trash") }}</button></form>
+      </div>
+      {% else %}
+      <div class="faq" style="color:var(--ink-3)">Aún no hay preguntas. Agrega la primera.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block modales %}
+<template id="m-servicio" data-titulo="Editar servicio">
+  <form method="post">{{ csrf(request) }}
+    <div class="modal-b">
+      <div class="field"><label for="es-n">Nombre</label><input id="es-n" name="nombre" maxlength="80" required></div>
+      <div class="field"><label for="es-d">Descripción para el sitio</label><textarea id="es-d" name="descripcion" rows="3" maxlength="400"></textarea><span class="hint">Una o dos frases. Así aparece en la sección de servicios.</span></div>
+      <div class="grid2"><div class="field"><label for="es-t">Duración de la cita (minutos)</label><input id="es-t" name="duracion_min" type="number" min="5" max="480" step="5" required></div>
+        <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" name="agendable" value="1"> Se agenda por cita</label></div></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Guardar servicio</button></div>
+  </form>
+</template>
+<template id="m-pregunta" data-titulo="Pregunta frecuente">
+  <form method="post">{{ csrf(request) }}
+    <div class="modal-b">
+      <div class="field"><label for="fq-p">Pregunta</label><input id="fq-p" name="pregunta" maxlength="200" required></div>
+      <div class="field"><label for="fq-r">Respuesta del asistente</label><textarea id="fq-r" name="respuesta" rows="4" maxlength="1000" required></textarea></div>
+      <div class="field"><label class="check"><input type="checkbox" name="visible" value="1"> Mostrar en el asistente</label></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Guardar pregunta</button></div>
+  </form>
+</template>
+{% endblock %}
