@@ -44,3 +44,7 @@ obj/
 # Bases de datos locales
 *.sqlite3
 *.db
+!.env.example
+.pytest_cache/
+*.db-wal
+*.db-shm
