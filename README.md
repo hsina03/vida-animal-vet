@@ -237,10 +237,30 @@ alembic upgrade head
 | `no such table` | Falta crear las tablas. Ejecuta `alembic upgrade head`. |
 | `Address already in use` | Ya hay un servidor en el puerto 8000. Ciérralo o usa `uvicorn app.main:app --reload --port 8001`. |
 
+## WhatsApp
+
+El sistema está pensado para trabajar con el **WhatsApp de la clínica** y se conectará a la **API oficial de WhatsApp Business** (WhatsApp Cloud API de Meta) en dos etapas.
+
+**Hoy (versión actual):** los botones de WhatsApp del sitio, del asistente y del panel abren WhatsApp con el número de la clínica (o el del propietario) y un mensaje ya escrito. El personal lo revisa y lo envía. El número se configura en **Panel → Contenido del sitio → Datos de contacto**, así que al poner el de la clínica todos los botones lo usan sin cambiar código.
+
+**Siguiente etapa (integración con la API):**
+
+1. **Avisos automáticos:** al confirmar, reprogramar o cancelar una cita en el panel, y un día antes de cada cita, el sistema enviará el mensaje al propietario desde el número de la clínica con plantillas aprobadas por Meta.
+2. **El asistente dentro de WhatsApp:** los propietarios podrán escribir al número de la clínica y les contestará el mismo asistente del sitio. Las solicitudes y los folios llegarán al mismo panel.
+
+Para activar la integración se necesita:
+
+- Una cuenta de **Meta Business** a nombre de la clínica, de preferencia verificada, y una app con el producto **WhatsApp** en developers.facebook.com.
+- **Registrar el número de la clínica** en la plataforma. Ojo: un número registrado en la API normalmente deja de funcionar en la app de WhatsApp del celular, así que la clínica debe decidir cómo atenderá los mensajes.
+- **Plantillas de mensaje** aprobadas por Meta (confirmación, cancelación, reprogramación y recordatorio) y un **token de acceso permanente**.
+- Un **método de pago** en Meta: los mensajes de plantilla tienen costo.
+- El sitio **publicado con HTTPS**, para que Meta pueda entregar los mensajes que reciba el número (la segunda etapa).
+
+Mientras tanto, el desarrollo y las pruebas se hacen con el **número de prueba gratuito** que da Meta. Las credenciales irán en `backend/.env` y nunca se suben al repositorio. Si no están configuradas, el sistema seguirá funcionando con los enlaces de WhatsApp como hoy.
+
 ## Notas
 
-- **WhatsApp:** el sistema no envía mensajes solo, porque eso requiere la API de WhatsApp Business. Los botones abren WhatsApp con el mensaje ya escrito para que el personal lo envíe.
-- **Teléfono de la clínica:** viene como `656 000 0000`. Cámbialo en **Panel → Contenido del sitio → Datos de contacto**.
+- **Teléfono y WhatsApp de la clínica:** vienen como `656 000 0000`. Cámbialos en **Panel → Contenido del sitio → Datos de contacto**.
 - **Usuarios nuevos:** el administrador les asigna una contraseña temporal y el sistema les pide cambiarla en su primer acceso.
 
 ## Equipo
