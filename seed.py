@@ -1,8 +1,9 @@
 """Prepara la base con los catálogos, las cuentas del personal y datos de ejemplo.
 
 Uso:
-    python seed.py              agrega lo que falte (no borra nada)
-    python seed.py --reiniciar  borra la base de desarrollo y la vuelve a crear
+    python seed.py               agrega lo que falte (no borra nada)
+    python seed.py --sin-ejemplos  solo catálogos y cuentas (para la clínica real; no agrega datos de prueba)
+    python seed.py --reiniciar   borra la base de desarrollo y la vuelve a crear
 
 Las contraseñas de las cuentas se toman de ADMIN_PASSWORD y OPERATIVO_PASSWORD en .env.
 """
@@ -46,7 +47,7 @@ DIAS_FESTIVOS = [  # (mes, día, motivo)
 ]
 
 
-def crear_cuentas(db) -> None:
+def crear_cuentas(db, ejemplos: bool = True) -> None:
     ajustes = obtener_ajustes()
     for usuario, nombre, password, rol in (
             (ajustes.admin_usuario, ajustes.admin_nombre, ajustes.admin_password, ROL_ADMIN),
@@ -59,7 +60,7 @@ def crear_cuentas(db) -> None:
             continue
         db.add(Usuario(nombre=nombre, usuario=usuario.lower(), rol=rol, password_hash=hash_password(password)))
         print(f"  · Cuenta «{usuario}» creada ({'administrador' if rol == ROL_ADMIN else 'personal operativo'}).")
-    for nombre, usuario, activo in USUARIOS_EJEMPLO:
+    for nombre, usuario, activo in USUARIOS_EJEMPLO if ejemplos else []:
         if not db.scalar(select(Usuario).where(Usuario.usuario == usuario)):
             # Contraseña aleatoria: son cuentas de muestra, el administrador puede restablecerlas
             db.add(Usuario(nombre=nombre, usuario=usuario, rol=ROL_OPERATIVO, activo=activo,
@@ -67,7 +68,43 @@ def crear_cuentas(db) -> None:
     db.commit()
 
 
+PRECIOS_EJEMPLO = {"consulta": "350", "vacunacion": "280", "cirugia": "1800", "estudios": "450", "estetica": "320",
+                   "hospitalizacion": "600", "hospedaje": "250", "cremacion": "1500"}
+
+PRODUCTOS_EJEMPLO = [  # nombre, categoría, unidad, existencia, mínimo, costo, precio, se vende
+    ("Vacuna antirrábica", "Vacuna", "dosis", "12", "5", "95", "180", True),
+    ("Vacuna múltiple canina", "Vacuna", "dosis", "8", "5", "160", "320", True),
+    ("Desparasitante oral perro 10 kg", "Medicamento", "pieza", "20", "6", "45", "95", True),
+    ("Pipeta antipulgas gato", "Medicamento", "pieza", "4", "6", "90", "170", True),
+    ("Croquetas cachorro 2 kg", "Alimento", "bolsa", "10", "4", "210", "320", True),
+    ("Shampoo hipoalergénico 500 ml", "Higiene", "frasco", "6", "3", "85", "150", True),
+    ("Collar isabelino mediano", "Accesorio", "pieza", "5", "2", "40", "90", True),
+    ("Gasas estériles", "Material de curación", "caja", "3", "4", "60", "0", False),
+]
+
+
+def crear_productos_ejemplo(db) -> None:
+    from decimal import Decimal
+    from app.models import Producto
+    from app.services import inventario
+    if db.scalar(select(Producto.id).limit(1)):
+        return
+    for clave, precio in PRECIOS_EJEMPLO.items():
+        servicio = db.scalar(select(Servicio).where(Servicio.clave == clave))
+        if servicio and not servicio.precio:
+            servicio.precio = Decimal(precio)
+    for nombre, categoria, unidad, existencia, minimo, costo, precio, se_vende in PRODUCTOS_EJEMPLO:
+        producto = Producto(nombre=nombre, categoria=categoria, unidad=unidad, minimo=Decimal(minimo),
+                            costo=Decimal(costo), precio=Decimal(precio), se_vende=se_vende)
+        db.add(producto)
+        db.flush()
+        inventario.mover(db, producto, "entrada", Decimal(existencia), motivo="Existencia inicial")
+    db.commit()
+    print(f"  · {len(PRODUCTOS_EJEMPLO)} productos de ejemplo en el inventario.")
+
+
 def crear_datos_ejemplo(db) -> None:
+    crear_productos_ejemplo(db)
     if db.scalar(select(Propietario.id).limit(1)):
         print("  · Ya hay propietarios registrados; no se agregaron datos de ejemplo.")
         return
@@ -188,9 +225,12 @@ def main() -> None:
         print("Cargando catálogos (servicios, horario, reglas y preguntas frecuentes)…")
         cargar_catalogos(db)
         print("Creando cuentas del personal…")
-        crear_cuentas(db)
-        print("Agregando datos de ejemplo…")
-        crear_datos_ejemplo(db)
+        crear_cuentas(db, ejemplos="--sin-ejemplos" not in sys.argv)
+        if "--sin-ejemplos" in sys.argv:
+            print("Sin datos de ejemplo (--sin-ejemplos).")
+        else:
+            print("Agregando datos de ejemplo…")
+            crear_datos_ejemplo(db)
         print("Listo. Ya puedes iniciar el servidor.")
     finally:
         db.close()

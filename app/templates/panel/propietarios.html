@@ -5,32 +5,88 @@
   <form class="search" method="get" action="/panel/propietarios" role="search" data-busqueda>
     {{ ic("i-search") }}<label for="o-search" class="sr">Buscar</label>
     <input id="o-search" name="q" value="{{ q }}" placeholder="Buscar por propietario, mascota o teléfono" autocomplete="off" {{ 'autofocus' if q }}>
+    {% if ver_archivados %}<input type="hidden" name="archivados" value="1">{% endif %}
   </form>
-  <div class="tb-r"><button class="btn btn-purple" type="button" data-modal="m-propietario-nuevo">{{ ic("i-plus") }}Registrar propietario</button></div>
+  {% if yo.es_admin %}
+  <div class="seg" aria-label="Clientes">
+    <a class="{{ 'on' if not ver_archivados }}" href="/panel/propietarios">{{ ic("i-users") }}Activos</a>
+    <a class="{{ 'on' if ver_archivados }}" href="/panel/propietarios?archivados=1">{{ ic("i-box") }}Archivados</a>
+  </div>
+  {% endif %}
+  {% if not ver_archivados %}<div class="tb-r"><button class="btn btn-purple" type="button" data-modal="m-propietario-nuevo">{{ ic("i-plus") }}Registrar propietario</button></div>{% endif %}
 </div>
+{% set extra = "&archivados=1" if ver_archivados else "" %}
+<nav class="letras" aria-label="Buscar por letra">
+  <a class="{{ 'on' if not letra }}" href="/panel/propietarios?{{ extra[1:] }}">Todos</a>
+  {% for l in letras %}<a class="{{ 'on' if l == letra }}" href="/panel/propietarios?letra={{ l|urlencode }}{{ extra }}" aria-label="Propietarios que empiezan con {{ l }}">{{ l }}</a>{% endfor %}
+</nav>
 <div class="owners">
   <div class="panel"><ul class="olist">
     {% for p in propietarios %}
-    <li><a href="/panel/propietarios?sel={{ p.id }}&q={{ q|urlencode }}" class="{{ 'on' if actual and p.id == actual.id }}"><span class="avatar">{{ p.iniciales }}</span><span><b>{{ p.nombre }}</b><small>{{ p.mascotas|map(attribute="nombre")|join(", ") }}{% if p.mascotas %}, {% endif %}{{ p.telefono|telefono }}</small></span></a></li>
+    <li><a href="/panel/propietarios?sel={{ p.id }}&q={{ q|urlencode }}&letra={{ letra }}{{ extra }}" class="{{ 'on' if actual and p.id == actual.id }}"><span class="avatar">{{ p.iniciales }}</span><span><b>{{ p.nombre }}</b><small>{{ p.mascotas|map(attribute="nombre")|join(", ") }}{% if p.mascotas %}, {% endif %}{{ p.telefono|telefono }}</small></span></a></li>
     {% else %}
-    <li class="empty">{{ ic("i-search") }}<h3>{% if q %}Sin resultados para «{{ q }}»{% else %}Aún no hay propietarios{% endif %}</h3><p>Revisa la ortografía o registra al propietario.</p></li>
+    <li class="empty">{{ ic("i-search") }}<h3>{% if q %}Sin resultados para «{{ q }}»{% elif letra %}Nadie empieza con «{{ letra }}»{% elif ver_archivados %}No hay clientes archivados{% else %}Aún no hay propietarios{% endif %}</h3><p>{% if ver_archivados %}Los clientes que archives aparecerán aquí.{% else %}Revisa la ortografía o registra al propietario.{% endif %}</p></li>
     {% endfor %}
   </ul></div>
 
   <div class="panel">
     {% if actual %}
-    <div class="odetail-h"><span class="avatar">{{ actual.iniciales }}</span><div><h2>{{ actual.nombre }}</h2><span class="src">Cliente desde {{ tiempo.MESES[actual.creado.month - 1] }} de {{ actual.creado.year }}</span></div>
-      <div class="sp"><button class="btn btn-ghost btn-sm" type="button" data-modal="m-propietario" data-accion="/panel/propietarios/{{ actual.id }}"
-        data-valores='{{ {"nombre": actual.nombre, "telefono": actual.telefono|telefono, "correo": actual.correo}|tojson }}'>{{ ic("i-edit") }}Editar datos</button></div></div>
+    <div class="odetail-h"><span class="avatar">{{ actual.iniciales }}</span><div><h2>{{ actual.nombre }}{% if actual.archivado %} <span class="badge b-canc">Archivado</span>{% endif %}</h2><span class="src">Cliente desde {{ tiempo.MESES[actual.creado.month - 1] }} de {{ actual.creado.year }}</span></div>
+      <div class="sp">
+        {% if actual.archivado %}
+        <form class="inline" method="post" action="/panel/propietarios/{{ actual.id }}/restaurar">{{ csrf(request) }}<button class="btn btn-purple btn-sm">{{ ic("i-check") }}Restaurar cliente</button></form>
+        {% else %}
+        <a class="btn btn-ghost btn-sm" href="/panel/caja?propietario={{ actual.id }}">{{ ic("i-cash") }}Cobrar</a>
+        <button class="btn btn-ghost btn-sm" type="button" data-modal="m-propietario" data-accion="/panel/propietarios/{{ actual.id }}"
+          data-valores='{{ {"nombre": actual.nombre, "telefono": actual.telefono|telefono, "correo": actual.correo}|tojson }}'>{{ ic("i-edit") }}Editar datos</button>
+        {% if yo.es_admin %}<form class="inline" method="post" action="/panel/propietarios/{{ actual.id }}/archivar" data-confirmar="¿Eliminar a {{ actual.nombre }} de la lista de clientes? Se archiva con sus mascotas, expedientes y cobros, y lo puedes restaurar desde «Archivados».">{{ csrf(request) }}<button class="btn-icon" style="color:var(--err)" title="Eliminar cliente" aria-label="Eliminar cliente">{{ ic("i-trash") }}</button></form>{% endif %}
+        {% endif %}
+      </div></div>
     <div class="facts"><div><b>WhatsApp</b><a href="{{ wa_url(actual.telefono) }}" target="_blank" rel="noopener" style="text-decoration:none">{{ actual.telefono|telefono }}</a></div><div><b>Correo</b>{{ actual.correo or "—" }}</div><div><b>Citas registradas</b>{{ historial|length }}</div></div>
     <div class="pets">
       {% for m in actual.mascotas %}
-      <div class="pet"><span class="pet-ic">{{ icono_mascota(m.especie) }}</span><div><h4>{{ m.nombre }}</h4><dl><dt>Especie</dt><dd>{{ m.especie }}{% if m.raza %}, {{ m.raza }}{% endif %}</dd><dt>Edad</dt><dd>{{ m.edad or "—" }}</dd><dt>Sexo</dt><dd>{{ m.sexo or "—" }}</dd><dt>Peso</dt><dd>{{ m.peso or "—" }}</dd></dl></div>
-        <button class="btn-icon" type="button" aria-label="Editar {{ m.nombre }}" data-modal="m-mascota" data-titulo="Editar a {{ m.nombre }}" data-accion="/panel/mascotas/{{ m.id }}"
-          data-valores='{{ {"mascota_nombre": m.nombre, "mascota_especie": m.especie, "mascota_raza": m.raza, "mascota_edad": m.edad, "mascota_sexo": m.sexo, "mascota_peso": m.peso}|tojson }}'>{{ ic("i-edit") }}</button></div>
+      <div class="pet {{ 'on' if mascota_actual and m.id == mascota_actual.id }}">
+        <button class="pet-ic pet-foto" type="button" aria-label="Foto de {{ m.nombre }}" data-modal="m-foto" data-titulo="Foto de {{ m.nombre }}" data-accion="/panel/mascotas/{{ m.id }}/foto"
+          data-valores='{{ {"quitar": "/panel/mascotas/" ~ m.id ~ "/foto/eliminar" if m.tiene_foto else ""}|tojson }}'>
+          {% if m.tiene_foto %}<img src="/panel/mascotas/{{ m.id }}/foto?v={{ m.foto_version }}" alt="Foto de {{ m.nombre }}" loading="lazy">{% else %}{{ icono_mascota(m.especie) }}<span class="pet-cam">{{ ic("i-camera") }}</span>{% endif %}
+        </button>
+        <div><h4><a href="/panel/propietarios?sel={{ actual.id }}&mascota={{ m.id }}{{ extra }}#expediente" style="color:inherit;text-decoration:none">{{ m.nombre }}</a></h4><dl><dt>Especie</dt><dd>{{ m.especie }}{% if m.raza %}, {{ m.raza }}{% endif %}</dd><dt>Edad</dt><dd>{{ m.edad or "—" }}</dd><dt>Sexo</dt><dd>{{ m.sexo or "—" }}</dd><dt>Peso</dt><dd>{{ m.peso or "—" }}</dd></dl></div>
+        {% if not actual.archivado %}<button class="btn-icon" type="button" aria-label="Editar {{ m.nombre }}" data-modal="m-mascota" data-titulo="Editar a {{ m.nombre }}" data-accion="/panel/mascotas/{{ m.id }}"
+          data-valores='{{ {"mascota_nombre": m.nombre, "mascota_especie": m.especie, "mascota_raza": m.raza, "mascota_edad": m.edad, "mascota_sexo": m.sexo, "mascota_peso": m.peso}|tojson }}'>{{ ic("i-edit") }}</button>{% endif %}</div>
       {% endfor %}
-      <button class="pet" type="button" style="background:none;border-style:dashed;cursor:pointer;place-items:center;grid-template-columns:1fr;color:var(--purple);font-weight:600" data-modal="m-mascota" data-titulo="Agregar mascota" data-accion="/panel/propietarios/{{ actual.id }}/mascotas">{{ ic("i-plus") }} Agregar mascota</button>
+      {% if not actual.archivado %}<button class="pet" type="button" style="background:none;border-style:dashed;cursor:pointer;place-items:center;grid-template-columns:1fr;color:var(--purple);font-weight:600" data-modal="m-mascota" data-titulo="Agregar mascota" data-accion="/panel/propietarios/{{ actual.id }}/mascotas">{{ ic("i-plus") }} Agregar mascota</button>{% endif %}
     </div>
+
+    {% if mascota_actual %}
+    <div class="exp-h" id="expediente">
+      <h3 class="sub-h" style="padding:0;margin:0">Expediente clínico</h3>
+      {% if actual.mascotas|length > 1 %}
+      <div class="seg" aria-label="Mascota">{% for m in actual.mascotas %}<a class="{{ 'on' if m.id == mascota_actual.id }}" href="/panel/propietarios?sel={{ actual.id }}&mascota={{ m.id }}{{ extra }}#expediente">{{ m.nombre }}</a>{% endfor %}</div>
+      {% else %}<span class="src">{{ mascota_actual.nombre }}</span>{% endif %}
+      {% if not actual.archivado %}<div class="sp"><button class="btn btn-purple btn-sm" type="button" data-modal="m-registro" data-titulo="Nuevo registro de {{ mascota_actual.nombre }}" data-accion="/panel/mascotas/{{ mascota_actual.id }}/expediente" data-valores='{{ {"fecha": hoy.isoformat(), "tipo": "Consulta", "peso": mascota_actual.peso}|tojson }}'>{{ ic("i-plus") }}Agregar registro</button></div>{% endif %}
+    </div>
+    <ul class="exp">
+      {% for r in registros %}
+      <li>
+        <div class="exp-fecha"><b>{{ r.fecha.date()|fecha_corta }}</b><span>{{ r.fecha.year }}</span></div>
+        <div class="exp-c">
+          <div class="exp-t"><span class="badge b-conf">{{ r.tipo }}</span><b>{{ r.motivo or "Sin motivo" }}</b>
+            {% if not actual.archivado %}<span class="acts">
+              <button class="btn-icon" type="button" aria-label="Editar registro" data-modal="m-registro" data-titulo="Editar registro" data-accion="/panel/expediente/{{ r.id }}"
+                data-valores='{{ {"fecha": r.fecha.date().isoformat(), "tipo": r.tipo, "motivo": r.motivo, "diagnostico": r.diagnostico, "tratamiento": r.tratamiento, "notas": r.notas, "peso": r.peso, "temperatura": r.temperatura, "proxima_fecha": r.proxima_fecha.isoformat() if r.proxima_fecha else ""}|tojson }}'>{{ ic("i-edit") }}</button>
+              {% if yo.es_admin %}<form class="inline" method="post" action="/panel/expediente/{{ r.id }}/eliminar" data-confirmar="¿Eliminar este registro del expediente? No se puede deshacer.">{{ csrf(request) }}<button class="btn-icon" aria-label="Eliminar registro">{{ ic("i-trash") }}</button></form>{% endif %}
+            </span>{% endif %}</div>
+          {% if r.diagnostico %}<p><b>Diagnóstico:</b> {{ r.diagnostico }}</p>{% endif %}
+          {% if r.tratamiento %}<p><b>Tratamiento:</b> {{ r.tratamiento }}</p>{% endif %}
+          {% if r.notas %}<p><b>Notas:</b> {{ r.notas }}</p>{% endif %}
+          <small>{% if r.peso %}Peso {{ r.peso }} · {% endif %}{% if r.temperatura %}Temp. {{ r.temperatura }} °C · {% endif %}{% if r.proxima_fecha %}Próxima: {{ r.proxima_fecha|fecha_corta }} {{ r.proxima_fecha.year }} · {% endif %}Registró {{ r.usuario.nombre if r.usuario else "—" }}</small>
+        </div>
+      </li>
+      {% else %}
+      <li class="exp-vacio">Aún no hay registros en el expediente de {{ mascota_actual.nombre }}.</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
     <h3 class="sub-h">Historial de citas</h3>
     <div class="table-wrap" style="padding:10px 8px 8px"><table class="t"><tbody>
       {% for c in historial %}
@@ -40,7 +96,7 @@
       {% endfor %}
     </tbody></table></div>
     {% else %}
-    <div class="empty">{{ ic("i-users") }}<h3>No hay un registro seleccionado</h3><p>Busca otro nombre o registra un propietario nuevo.</p></div>
+    <div class="empty">{{ ic("i-users") }}<h3>{{ "No hay clientes archivados" if ver_archivados else "No hay un registro seleccionado" }}</h3><p>Busca otro nombre o registra un propietario nuevo.</p></div>
     {% endif %}
   </div>
 </div>
@@ -76,6 +132,36 @@
         <div class="field"><label for="eo-m2">Correo (opcional)</label><input id="eo-m2" name="correo" type="email" maxlength="120"></div></div>
     </div>
     <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Guardar cambios</button></div>
+  </form>
+</template>
+
+<template id="m-foto" data-titulo="Foto de la mascota">
+  <form method="post" enctype="multipart/form-data">{{ csrf(request) }}
+    <div class="modal-b">
+      <div class="foto-prev" data-foto-prev hidden><img alt="Vista previa"></div>
+      <div class="field"><label for="ft-a">Elige o toma una foto</label><input id="ft-a" type="file" name="foto" accept="image/jpeg,image/png,image/webp" capture="environment" required data-foto>
+        <span class="hint">JPG, PNG o WEBP. La foto se reduce automáticamente antes de subirse.</span></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button>
+      <button class="btn btn-ghost" type="submit" formaction="" formnovalidate data-quitar-foto style="color:var(--err)">{{ ic("i-trash") }}Quitar foto</button>
+      <button class="btn btn-purple">{{ ic("i-check") }}Guardar foto</button></div>
+  </form>
+</template>
+
+<template id="m-registro" data-titulo="Registro del expediente">
+  <form method="post">{{ csrf(request) }}
+    <div class="modal-b">
+      <div class="grid2"><div class="field"><label for="ex-f">Fecha</label><input id="ex-f" type="date" name="fecha" max="{{ hoy.isoformat() }}" required></div>
+        <div class="field"><label for="ex-t">Tipo</label><select id="ex-t" name="tipo">{% for t in tipos_registro %}<option>{{ t }}</option>{% endfor %}</select></div></div>
+      <div class="field"><label for="ex-m">Motivo de la visita</label><input id="ex-m" name="motivo" maxlength="200" placeholder="Ej. Vacuna antirrábica, vómito desde ayer"></div>
+      <div class="field"><label for="ex-d">Diagnóstico</label><textarea id="ex-d" name="diagnostico" rows="2" maxlength="4000"></textarea></div>
+      <div class="field"><label for="ex-tr">Tratamiento o indicaciones</label><textarea id="ex-tr" name="tratamiento" rows="2" maxlength="4000"></textarea></div>
+      <div class="grid2"><div class="field"><label for="ex-p">Peso</label><input id="ex-p" name="peso" maxlength="20" placeholder="Ej. 7.2 kg"></div>
+        <div class="field"><label for="ex-te">Temperatura (°C)</label><input id="ex-te" name="temperatura" maxlength="10" inputmode="decimal" placeholder="Ej. 38.5"></div></div>
+      <div class="grid2"><div class="field"><label for="ex-pr">Próxima vacuna o revisión (opcional)</label><input id="ex-pr" type="date" name="proxima_fecha"></div>
+        <div class="field"><label for="ex-n">Notas</label><textarea id="ex-n" name="notas" rows="1" maxlength="4000"></textarea></div></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Guardar registro</button></div>
   </form>
 </template>
 

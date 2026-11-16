@@ -11,13 +11,16 @@ Proyecto académico de la materia *Administración y Evaluación de Proyectos de
 | **Sitio público** (`/`) | Inicio, servicios, cómo agendar, nosotros, ubicación y contacto. Los servicios, el horario, el teléfono y la dirección se leen de la base de datos. Botón de WhatsApp de la clínica. |
 | **Asistente** (dentro del sitio) | Agenda citas (servicio → mascota → día → horario libre → propietario → resumen → confirmar). Responde preguntas frecuentes y da horario y ubicación. Canaliza al personal si se pide, si detecta una urgencia o si no entiende dos veces seguidas. |
 | **Inicio de sesión** (`/login`) | Mensajes claros para datos incorrectos o una cuenta desactivada. Bloquea la cuenta 15 minutos después de 5 intentos fallidos. |
-| **Panel** (`/panel`) | Inicio, Citas (lista y semana), Solicitudes del chat, Propietarios y mascotas, Horarios, Contenido del sitio y Usuarios. Tiene dos roles: Administrador y Personal operativo. El servidor revisa el rol en cada petición. |
+| **Panel** (`/panel`) | Inicio, Citas (lista y semana), Solicitudes del chat, Propietarios y mascotas, Caja y cobros, Inventario, Horarios, Contenido del sitio y Usuarios. Tiene dos roles: Administrador y Personal operativo. El servidor revisa el rol en cada petición. |
+| **Expediente clínico** | Registros por mascota (consulta, vacunación, cirugía, etc.) con motivo, diagnóstico, tratamiento, peso, temperatura y próxima fecha. Fotos de las mascotas. |
+| **Caja y cobros** | Cobro de servicios y productos, efectivo con cambio, tarjeta o transferencia, descuentos, ticket imprimible, cancelaciones (solo administrador) y corte de caja del día. Se puede cobrar directo desde una cita. |
+| **Inventario** | Productos y medicamentos con existencia, mínimo, costo, precio y caducidad; entradas, salidas y ajustes con historial; aviso de productos por surtir. Las ventas descuentan la existencia. |
 
 ### Reglas de la agenda
 
 - Espacios de 30 minutos, con un máximo de 2 citas por espacio y al menos 2 horas de anticipación para citas pedidas por el chat. Las tres reglas se configuran en **Horarios y disponibilidad**.
 - Un servicio largo ocupa varios espacios seguidos. Por ejemplo, estética dura 60 minutos y ocupa 2 espacios.
-- No se ofrecen horarios en días cerrados ni en días sin servicio.
+- No se ofrecen horarios en días cerrados ni en días sin servicio. Un día puede marcarse con **horario especial** (abre más tarde o cierra más temprano) y la agenda y el asistente usan ese horario.
 - Hospitalización, medicamentos y cremación no se agendan por cita.
 - La revisión de cupo y el registro de la cita van en la misma transacción, con un candado, para que dos personas no tomen el último lugar al mismo tiempo. La prueba `test_doble_reserva_concurrente_solo_una_toma_el_ultimo_lugar` lo comprueba.
 - Zona horaria: `America/Ciudad_Juarez`.
@@ -27,7 +30,7 @@ Proyecto académico de la materia *Administración y Evaluación de Proyectos de
 | Componente | Tecnología |
 |---|---|
 | Backend | Python 3.11 o más nuevo, FastAPI |
-| Base de datos | SQLite en desarrollo, con SQLAlchemy y migraciones con Alembic. Para usar MySQL basta con cambiar la cadena de conexión. |
+| Base de datos | SQLite en desarrollo y PostgreSQL (Neon) en internet, con SQLAlchemy y migraciones con Alembic. Ver [`docs/despliegue.md`](docs/despliegue.md). |
 | Frontend | Plantillas Jinja2 y JavaScript sin frameworks, con el CSS del prototipo |
 | Seguridad | Contraseñas con bcrypt (passlib), sesión en cookie httpOnly firmada, protección CSRF y escape automático de datos |
 | Pruebas | pytest y el TestClient de FastAPI |
@@ -158,6 +161,8 @@ pytest -v
 | `tests/test_chatbot.py` | Flujos del asistente: agendar, urgencias, canalización y preguntas frecuentes |
 | `tests/test_panel_citas.py` | Acciones del panel y el flujo completo: agendar por el chat y confirmar en el panel |
 | `tests/test_migraciones.py` | Que la migración de Alembic coincida con los modelos |
+| `tests/test_casos_de_prueba.py` | Casos CP-10, CP-13 y CP-14 de la matriz de pruebas de la Fase 3 |
+| `tests/test_mejoras_clinica.py` | Expediente, fotos, búsqueda por letra, archivar clientes, horario especial, inventario y caja |
 
 ## Estructura del proyecto
 
@@ -170,7 +175,7 @@ pytest -v
 │   ├── models.py            # tablas
 │   ├── security.py          # contraseñas, sesión, roles y CSRF
 │   ├── datos_iniciales.py   # servicios, horario y preguntas iniciales
-│   ├── services/            # reglas de negocio (agenda, citas, solicitudes…)
+│   ├── services/            # reglas de negocio (agenda, citas, caja, inventario, expediente…)
 │   ├── chatbot/             # asistente: máquina de estados sin IA externa
 │   ├── routers/             # rutas del sitio, del chat y del panel
 │   ├── templates/           # plantillas Jinja2
@@ -179,27 +184,18 @@ pytest -v
 ├── tests/                   # pruebas con pytest
 ├── prototipo/               # prototipo original de Figma (no se modifica)
 ├── docs/                    # documentación del curso
+├── scripts/                 # correr pruebas con evidencia y respaldar la base
+├── render.yaml              # configuración para publicar en Render
 ├── seed.py                  # datos iniciales y de ejemplo
 ├── requirements.txt
 └── .env.example
 ```
 
-## Cambiar a MySQL
+## Publicar en internet
 
-1. Instala el controlador:
+El sistema se publica en Render con la base de datos en Neon (PostgreSQL), ambos en plan gratuito, para que los datos sean permanentes. La guía paso a paso está en [`docs/despliegue.md`](docs/despliegue.md) y la configuración en `render.yaml`.
 
-   ```bash
-   pip install pymysql
-   ```
-
-2. Crea la base en MySQL, por ejemplo con `CREATE DATABASE vida_animal CHARACTER SET utf8mb4;`.
-3. En `.env`, cambia la cadena de conexión:
-
-   ```
-   DATABASE_URL=mysql+pymysql://usuario:contraseña@localhost:3306/vida_animal
-   ```
-
-4. Ejecuta `alembic upgrade head` y `python seed.py`.
+Para la clínica real se usa `python seed.py --sin-ejemplos`, que crea los catálogos y las cuentas sin datos de prueba. Para respaldar la base: `python scripts/respaldar.py`.
 
 ## Cambios en la base de datos
 

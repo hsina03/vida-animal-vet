@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session, joinedload
 from app import tiempo
 from app.models import Cita, Mascota, Propietario, Servicio, Usuario
 from app.security import verificar_csrf
-from app.services import citas, solicitudes
+from app.services import citas, inventario, solicitudes
 from app.templating import flash
 
 CSRF = Depends(verificar_csrf)
@@ -19,12 +19,14 @@ TITULOS = {
     "inicio": "Inicio", "citas": "Citas", "solicitudes": "Solicitudes del chat",
     "propietarios": "Propietarios y mascotas", "horarios": "Horarios y disponibilidad",
     "contenido": "Contenido del sitio", "usuarios": "Usuarios y roles",
+    "inventario": "Inventario", "caja": "Caja y cobros",
 }
 
 
 def contexto(db: Session, yo: Usuario, seccion: str, **extra) -> dict:
     return {"yo": yo, "seccion": seccion, "titulo": TITULOS[seccion], "hoy": tiempo.hoy(),
-            "solicitudes_abiertas": solicitudes.contar_abiertas(db), **extra}
+            "solicitudes_abiertas": solicitudes.contar_abiertas(db),
+            "productos_por_surtir": inventario.contar_bajos(db), **extra}
 
 
 def ruta_segura(url: str | None, por_defecto: str) -> str:
@@ -51,6 +53,7 @@ def datos_modales(db: Session) -> dict:
     return {
         "servicios_agendables": list(db.scalars(select(Servicio).where(Servicio.agendable.is_(True))
                                                 .order_by(Servicio.orden))),
-        "propietarios": list(db.scalars(select(Propietario).order_by(Propietario.nombre))),
+        "propietarios": list(db.scalars(select(Propietario).where(Propietario.archivado.is_(False))
+                                        .order_by(Propietario.nombre))),
         "motivos": citas.MOTIVOS_CANCELACION,
     }

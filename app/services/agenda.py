@@ -43,9 +43,15 @@ def reglas(db: Session) -> ReglasAgenda:
     )
 
 
+def dia_especial(db: Session, fecha: date) -> DiaSinServicio | None:
+    return db.scalar(select(DiaSinServicio).where(DiaSinServicio.fecha == fecha))
+
+
 def motivo_sin_servicio(db: Session, fecha: date) -> str | None:
     """Devuelve por qué no hay servicio ese día, o None si sí hay."""
-    dia = db.scalar(select(DiaSinServicio).where(DiaSinServicio.fecha == fecha))
+    dia = dia_especial(db, fecha)
+    if dia and dia.horario_especial:
+        return None   # ese día abre con un horario distinto
     if dia:
         return f"Día sin servicio: {dia.motivo}" if dia.motivo else "Día sin servicio"
     horario = db.get(HorarioDia, fecha.weekday())
@@ -57,6 +63,9 @@ def motivo_sin_servicio(db: Session, fecha: date) -> str | None:
 def horario_del_dia(db: Session, fecha: date) -> tuple[datetime, datetime] | None:
     if motivo_sin_servicio(db, fecha):
         return None
+    dia = dia_especial(db, fecha)
+    if dia and dia.horario_especial:
+        return datetime.combine(fecha, dia.apertura), datetime.combine(fecha, dia.cierre)
     horario = db.get(HorarioDia, fecha.weekday())
     return datetime.combine(fecha, horario.apertura), datetime.combine(fecha, horario.cierre)
 

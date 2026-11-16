@@ -6,7 +6,8 @@ from app.models import HorarioDia, Servicio, Usuario
 from .conftest import csrf_de, entrar
 
 PAGINAS = ["/panel", "/panel/citas", "/panel/citas?vista=semana", "/panel/solicitudes",
-           "/panel/propietarios", "/panel/horarios"]
+           "/panel/propietarios", "/panel/horarios", "/panel/caja", "/panel/caja/corte", "/panel/inventario",
+           "/panel/propietarios?letra=S"]
 SOLO_ADMIN = ["/panel/contenido", "/panel/usuarios"]
 
 

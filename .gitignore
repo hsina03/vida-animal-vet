@@ -48,3 +48,6 @@ obj/
 .pytest_cache/
 *.db-wal
 *.db-shm
+
+# Respaldos de la base (datos personales)
+respaldos/

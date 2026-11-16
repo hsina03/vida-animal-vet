@@ -1,0 +1,75 @@
+{% extends "panel/base.html" %}
+{% from "_macros.html" import ic, badge, csrf %}
+{% block vista %}
+<div class="kpis">
+  <a class="kpi" href="/panel/caja/corte?fecha={{ dia.isoformat() }}"><span class="kpi-ic">{{ ic("i-cash") }}</span><div><b>{{ resumen.total|dinero }}</b><span>Cobrado {{ "hoy" if dia == hoy else "este día" }} ({{ resumen.ventas }} ventas)</span></div></a>
+  {% for clave, nombre in metodos.items() %}
+  <div class="kpi"><span class="kpi-ic">{{ ic("i-cash" if clave == "efectivo" else "i-file") }}</span><div><b>{{ resumen.por_metodo[clave]|dinero }}</b><span>{{ nombre }}</span></div></div>
+  {% endfor %}
+</div>
+
+<div class="pos">
+  <form class="panel" method="post" action="/panel/caja" data-caja>
+    {{ csrf(request) }}
+    <input type="hidden" name="conceptos" value="[]"><input type="hidden" name="cita_id" value="{{ inicial.cita_id }}">
+    <div class="panel-h"><h2>Nueva venta</h2>{% if inicial.cita_id %}<div class="sp"><span class="badge b-conf">Cobro de cita</span></div>{% endif %}</div>
+    <div class="panel-b">
+      <div class="grid2">
+        <div class="field"><label for="cj-c">Cliente</label>
+          <select id="cj-c" name="propietario_id" data-cliente>
+            <option value="">Venta al público (sin cliente)</option>
+            {% for p in clientes %}<option value="{{ p.id }}" {{ 'selected' if p.id == inicial.propietario_id }}>{{ p.nombre }} · {{ p.telefono|telefono }}</option>{% endfor %}
+          </select></div>
+        <div class="field"><label for="cj-m">Mascota</label><select id="cj-m" name="mascota_id" data-mascota data-inicial="{{ inicial.mascota_id }}"><option value="">Sin mascota</option></select></div>
+      </div>
+      <div class="field pos-buscar"><label for="cj-b">Agregar servicio o producto</label>
+        <div class="search" style="max-width:none">{{ ic("i-search") }}<input id="cj-b" placeholder="Escribe para buscar: consulta, vacuna, croquetas…" autocomplete="off" data-buscar-concepto></div>
+        <div class="pos-res" data-resultados role="listbox" aria-label="Resultados"></div>
+      </div>
+      <div class="table-wrap pos-carrito"><table class="t">
+        <thead><tr><th>Concepto</th><th style="width:110px">Cantidad</th><th>Precio</th><th>Importe</th><th></th></tr></thead>
+        <tbody data-carrito><tr data-vacio><td colspan="5" style="color:var(--ink-3)">Agrega los servicios y productos que se van a cobrar.</td></tr></tbody>
+      </table></div>
+      <div class="pos-tot">
+        <div><span>Subtotal</span><b data-subtotal>$0.00</b></div>
+        <div><label for="cj-d">Descuento</label><input id="cj-d" name="descuento" inputmode="decimal" placeholder="0.00" data-descuento></div>
+        <div class="pos-total"><span>Total</span><b data-total>$0.00</b></div>
+      </div>
+      <div class="field"><label>Forma de pago</label>
+        <div class="seg pos-metodo" role="radiogroup">
+          {% for clave, nombre in metodos.items() %}<label class="{{ 'on' if loop.first }}"><input type="radio" name="metodo" value="{{ clave }}" {{ 'checked' if loop.first }} class="sr">{{ nombre }}</label>{% endfor %}
+        </div></div>
+      <div class="grid2" data-efectivo>
+        <div class="field"><label for="cj-r">Efectivo recibido</label><input id="cj-r" name="recibido" inputmode="decimal" placeholder="0.00" data-recibido></div>
+        <div class="field"><label>Cambio</label><div class="pos-cambio" data-cambio>$0.00</div></div>
+      </div>
+      <div class="field" data-referencia hidden><label for="cj-ref">Referencia o últimos 4 dígitos (opcional)</label><input id="cj-ref" name="referencia" maxlength="60"></div>
+      <div class="field"><label for="cj-n">Notas (opcional)</label><input id="cj-n" name="notas" maxlength="300"></div>
+      <div class="alert" data-error-caja role="alert">{{ ic("i-alert") }}<span></span></div>
+      <button class="btn btn-purple" style="width:100%;justify-content:center" data-cobrar>{{ ic("i-check") }}Cobrar <span data-total-boton>$0.00</span></button>
+    </div>
+  </form>
+
+  <div class="panel">
+    <div class="panel-h"><h2>Ventas</h2><div class="sp">
+      <div class="datenav">
+        <a class="btn-icon" href="/panel/caja?fecha={{ (dia|sumar_dias(-1)).isoformat() }}" aria-label="Día anterior">{{ ic("i-left") }}</a>
+        <span>{{ dia|fecha_corta }}</span>
+        <a class="btn-icon" href="/panel/caja?fecha={{ (dia|sumar_dias(1)).isoformat() }}" aria-label="Día siguiente">{{ ic("i-right") }}</a>
+      </div></div></div>
+    <div class="table-wrap"><table class="t"><tbody>
+      {% for v in ventas %}
+      <tr class="{{ 'cx' if v.cancelada }}"><td class="num"><a href="/panel/caja/ventas/{{ v.id }}" style="text-decoration:none">{{ v.folio }}</a><br><span class="src">{{ v.creado|hora }}</span></td>
+        <td>{{ v.propietario.nombre if v.propietario else "Público" }}<br><span class="src">{{ v.usuario.nombre if v.usuario else "" }}</span></td>
+        <td class="num">{{ v.total|dinero }}<br>{% if v.cancelada %}{{ badge("cancelada", "Cancelada") }}{% else %}<span class="src">{{ v.metodo_txt }}</span>{% endif %}</td></tr>
+      {% else %}
+      <tr><td style="color:var(--ink-3)">Sin ventas {{ "hoy" if dia == hoy else "este día" }}.</td></tr>
+      {% endfor %}
+    </tbody></table></div>
+    <div class="panel-b" style="border-top:1px solid var(--line)"><a class="btn btn-ghost btn-sm" href="/panel/caja/corte?fecha={{ dia.isoformat() }}">{{ ic("i-list") }}Corte de caja</a></div>
+  </div>
+</div>
+<script type="application/json" id="catalogo">{{ catalogo|tojson }}</script>
+<script type="application/json" id="caja-inicial">{{ inicial|tojson }}</script>
+{% endblock %}
+{% block scripts %}{{ super() }}<script src="/static/js/caja.js?v=1"></script>{% endblock %}

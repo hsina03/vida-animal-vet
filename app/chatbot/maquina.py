@@ -255,11 +255,17 @@ class Asistente:
         horario = "; ".join(f"{dias.lower() if i else dias} {'de ' + horas if horas != 'Cerrado' else 'cerrado'}"
                             for i, (dias, horas) in enumerate(sitio.resumen_horario(self.db)))
         mensaje = f"Estamos en {ajustes.obtener(self.db, 'direccion')}. Atendemos: {horario}."
-        cerrados = sitio.proximos_dias_sin_servicio(self.db, 21)
+        proximos = sitio.proximos_dias_sin_servicio(self.db, 21)
+        cerrados = [d for d in proximos if not d.horario_especial]
+        especiales = [d for d in proximos if d.horario_especial]
         if cerrados:
             fechas = ", ".join(f"{d.fecha.day} de {tiempo.MESES[d.fecha.month - 1]}"
                                + (f" ({d.motivo})" if d.motivo else "") for d in cerrados)
             mensaje += f" No hay servicio: {fechas}."
+        if especiales:
+            fechas = ", ".join(f"{d.fecha.day} de {tiempo.MESES[d.fecha.month - 1]} de "
+                               f"{tiempo.hora_txt(d.apertura)} a {tiempo.hora_txt(d.cierre)}" for d in especiales)
+            mensaje += f" Horario especial: {fechas}."
         self.decir(mensaje)
         self.decir(f"Nuestro teléfono y WhatsApp es {formato_telefono(ajustes.obtener(self.db, 'telefono'))}.")
         self.preguntar_algo_mas()
@@ -401,6 +407,8 @@ class Asistente:
                 propietario = Propietario(nombre=self.datos["nombre"], telefono=self.datos["telefono"])
                 self.db.add(propietario)
                 self.db.flush()
+            elif propietario.archivado:   # vuelve a ser cliente activo
+                propietario.archivado, propietario.archivado_en = False, None
             mascota = buscar_o_crear_mascota(self.db, propietario, self.datos["mascota"], self.datos["especie"])
             cita = agenda.reservar(self.db, mascota=mascota, servicio=servicio, inicio=inicio, origen="chat")
             solicitud = solicitudes.crear(

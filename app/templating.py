@@ -8,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 
 from app import tiempo
 from app.security import token_csrf
+from app.services import dinero
 from app.services.propietarios import formato_telefono
 
 CARPETA = Path(__file__).parent
@@ -27,6 +28,8 @@ entorno.filters.update({
     "telefono": formato_telefono,
     "clase_estado": lambda estado: CLASE_ESTADO.get(estado, "b-canc"),
     "sumar_dias": lambda fecha, n: fecha + timedelta(days=n),
+    "dinero": dinero.formato,
+    "cantidad": dinero.cantidad,
 })
 
 

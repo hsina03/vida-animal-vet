@@ -7,7 +7,9 @@ from app.database import get_db
 from app.models import PreguntaFrecuente, Servicio, Usuario
 from app.routers.panel.comun import CSRF, contexto, volver
 from app.security import requiere_admin
+from app.errores import ErrorNegocio
 from app.services import ajustes as aj
+from app.services import dinero
 from app.services.propietarios import formato_telefono, limpiar_telefono
 from app.templating import render
 
@@ -35,9 +37,13 @@ def _servicio(db: Session, servicio_id: int) -> Servicio:
 
 @router.post("/panel/contenido/servicios/{servicio_id}", dependencies=[CSRF])
 def editar_servicio(request: Request, servicio_id: int, nombre: str = Form(""), descripcion: str = Form(""),
-                    duracion_min: int = Form(30), agendable: str = Form(""), db: Session = Depends(get_db),
-                    yo: Usuario = Depends(requiere_admin)):
+                    duracion_min: int = Form(30), agendable: str = Form(""), precio: str = Form(""),
+                    db: Session = Depends(get_db), yo: Usuario = Depends(requiere_admin)):
     servicio = _servicio(db, servicio_id)
+    try:
+        servicio.precio = dinero.leer(precio, "el precio")
+    except ErrorNegocio as error:
+        return volver(request, DESTINO, error.mensaje, "error")
     nombre = " ".join(nombre.split())
     if not nombre or len(nombre) > 80:
         return volver(request, DESTINO, "Escribe el nombre del servicio.", "error")

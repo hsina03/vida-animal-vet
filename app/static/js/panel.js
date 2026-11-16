@@ -75,6 +75,25 @@
     });
     $$('[data-href]', modal).forEach(el => { if (!el.href) el.remove(); });
 
+    // Foto de la mascota: el botón "Quitar foto" solo aparece si ya tiene foto
+    const quitar = $('[data-quitar-foto]', modal);
+    if (quitar) {
+      if (typeof valores.quitar === 'string' && valores.quitar.startsWith('/panel/')) quitar.formAction = valores.quitar;
+      else quitar.remove();
+    }
+    const foto = $('[data-foto]', modal);
+    if (foto) prepararFoto(foto);
+    // Producto: la existencia inicial solo se captura al darlo de alta
+    const edicion = $('[name=edicion]', modal);
+    if (edicion && edicion.value === '1') $$('[data-solo-alta]', modal).forEach(el => { el.hidden = true; });
+    // Día especial: muestra las horas solo si abre con otro horario
+    const especial = $('[data-horario-especial]', modal);
+    if (especial) {
+      const actualizar = () => { especial.hidden = ($('[name=tipo]:checked', modal) || {}).value !== 'horario'; };
+      $$('[name=tipo]', modal).forEach(r => r.addEventListener('change', actualizar));
+      actualizar();
+    }
+
     scrim.classList.add('on');
     if (form && form.hasAttribute('data-con-horario')) prepararHorario(form);
     if ($('[data-mascotas]', modal)) prepararMascotas($('[data-mascotas]', modal));
@@ -91,6 +110,41 @@
     if (e.target === scrim || e.target.closest('[data-close]')) cerrarModal();
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && scrim.classList.contains('on')) cerrarModal(); });
+
+  /* ---------------- foto: vista previa y reducción antes de subir ---------------- */
+  function prepararFoto(input) {
+    const prev = $('[data-foto-prev]', modal);
+    input.addEventListener('change', () => {
+      const archivo = input.files && input.files[0];
+      if (!archivo || !/^image\//.test(archivo.type)) return;
+      const lector = new FileReader();
+      lector.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const max = 1024, escala = Math.min(1, max / Math.max(img.width, img.height));
+          const lienzo = document.createElement('canvas');
+          lienzo.width = Math.round(img.width * escala); lienzo.height = Math.round(img.height * escala);
+          lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height);
+          const datos = lienzo.toDataURL('image/jpeg', 0.85);
+          if (prev) { $('img', prev).src = datos; prev.hidden = false; }
+          lienzo.toBlob(blob => {
+            if (!blob || !window.DataTransfer) return;
+            const dt = new DataTransfer();
+            dt.items.add(new File([blob], 'foto.jpg', { type: 'image/jpeg' }));
+            input.files = dt.files;
+          }, 'image/jpeg', 0.85);
+        };
+        img.src = lector.result;
+      };
+      lector.readAsDataURL(archivo);
+    });
+  }
+
+  /* ---------------- imprimir y filtros que se envían solos ---------------- */
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-imprimir]')) window.print();
+  });
+  $$('[data-autoenviar-select]').forEach(el => el.addEventListener('change', () => el.form.submit()));
 
   /* ---------------- mascotas del propietario (nueva cita) ---------------- */
   function prepararMascotas(selectProp) {

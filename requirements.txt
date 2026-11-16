@@ -9,6 +9,8 @@ pydantic-settings==2.16.2
 # Base de datos
 SQLAlchemy==2.1.6
 alembic==1.20.1
+# Controlador de PostgreSQL para la base en la nube (Neon). En desarrollo se usa SQLite.
+psycopg[binary]>=3.2,<4
 
 # Contraseñas (bcrypt 4.0.x es la versión compatible con passlib 1.7.4)
 passlib==1.7.4

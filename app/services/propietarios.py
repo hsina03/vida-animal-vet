@@ -35,6 +35,8 @@ def validar_propietario(db: Session, nombre: str, telefono: str, correo: str = "
         raise ErrorNegocio("Revisa el correo electrónico o déjalo vacío.")
     otro = db.scalar(select(Propietario).where(Propietario.telefono == tel))
     if otro and otro.id != excluir_id:
+        if otro.archivado:
+            raise ErrorNegocio(f"Ese teléfono es de {otro.nombre}, que está archivado. Restáuralo desde «Archivados».")
         raise ErrorNegocio(f"Ya hay un propietario con ese teléfono: {otro.nombre}.")
     return nombre, tel, correo
 
@@ -57,9 +59,32 @@ def validar_mascota(datos: dict) -> dict:
     }
 
 
-def buscar(db: Session, texto: str, limite: int = 100) -> list[Propietario]:
-    consulta = select(Propietario).order_by(Propietario.nombre)
+ACENTOS = {"a": "á", "e": "é", "i": "í", "o": "ó", "u": "ú", "n": "ñ"}
+LETRAS = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"
+
+
+def letra_inicial(nombre: str) -> str:
+    inicial = (nombre or "?")[0].upper()
+    return {"Á": "A", "É": "E", "Í": "I", "Ó": "O", "Ú": "U"}.get(inicial, inicial)
+
+
+def buscar(db: Session, texto: str, limite: int = 100, *, letra: str = "",
+           archivados: bool = False) -> list[Propietario]:
+    """Busca propietarios por nombre, mascota o teléfono.
+
+    Con una sola letra (o con `letra`) devuelve los propietarios cuyo nombre empieza con ella.
+    """
+    consulta = select(Propietario).where(Propietario.archivado.is_(archivados)).order_by(Propietario.nombre)
     texto = (texto or "").strip()
+    letra = (letra or "").strip()[:1]
+    if len(texto) == 1 and texto.isalpha():
+        letra, texto = texto, ""
+    if letra:
+        variantes = {letra.lower(), letra.upper()}
+        acento = ACENTOS.get(letra.lower())
+        if acento:
+            variantes |= {acento, acento.upper()}
+        consulta = consulta.where(or_(*[Propietario.nombre.like(f"{v}%") for v in sorted(variantes)]))
     if texto:
         patron = f"%{texto.lower()}%"
         condiciones = [func.lower(Propietario.nombre).like(patron),
