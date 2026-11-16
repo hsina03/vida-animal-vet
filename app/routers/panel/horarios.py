@@ -80,17 +80,29 @@ async def guardar(request: Request, db: Session = Depends(get_db), yo: Usuario =
 
 
 @router.post("/panel/horarios/dias-sin-servicio", dependencies=[CSRF])
-def agregar_dia(request: Request, fecha: str = Form(""), motivo: str = Form(""), db: Session = Depends(get_db),
+def agregar_dia(request: Request, fecha: str = Form(""), motivo: str = Form(""), tipo: str = Form("cerrado"),
+                apertura: str = Form(""), cierre: str = Form(""), db: Session = Depends(get_db),
                 yo: Usuario = Depends(requiere_admin)):
+    """Un día cerrado, o con un horario distinto al habitual (abre más tarde, cierra más temprano, etc.)."""
     dia = leer_fecha(fecha)
     if not dia or dia < tiempo.hoy():
         return volver(request, "/panel/horarios", "Elige una fecha de hoy en adelante.", "error")
-    db.add(DiaSinServicio(fecha=dia, motivo=motivo.strip()[:120]))
+    hora_abre = hora_cierra = None
+    if tipo == "horario":
+        hora_abre, hora_cierra = _hora(apertura), _hora(cierre)
+        if not hora_abre or not hora_cierra or hora_abre >= hora_cierra:
+            return volver(request, "/panel/horarios",
+                          "Revisa el horario especial: la hora de cierre debe ser después de la apertura.", "error")
+    db.add(DiaSinServicio(fecha=dia, motivo=motivo.strip()[:120], apertura=hora_abre, cierre=hora_cierra))
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
-        return volver(request, "/panel/horarios", "Ese día ya estaba registrado sin servicio.", "error")
+        return volver(request, "/panel/horarios", "Ese día ya tiene un cambio de horario. Quítalo y vuelve a agregarlo.",
+                      "error")
+    if hora_abre:
+        return volver(request, "/panel/horarios", f"El {tiempo.fecha_larga(dia).lower()} se atenderá de "
+                      f"{tiempo.hora_txt(hora_abre)} a {tiempo.hora_txt(hora_cierra)}.")
     return volver(request, "/panel/horarios", f"El {tiempo.fecha_larga(dia).lower()} quedó sin servicio.")
 
 
@@ -100,4 +112,4 @@ def quitar_dia(request: Request, dia_id: int, db: Session = Depends(get_db), yo:
     if dia:
         db.delete(dia)
         db.commit()
-    return volver(request, "/panel/horarios", "Día sin servicio quitado.")
+    return volver(request, "/panel/horarios", "Cambio de horario quitado. Ese día vuelve al horario habitual.")

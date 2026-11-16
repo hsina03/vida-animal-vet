@@ -9,7 +9,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import obtener_ajustes
 from app.routers import auth, chat_api, publico
-from app.routers.panel import citas, contenido, horarios, inicio, propietarios, solicitudes, usuarios
+from app.routers.panel import (caja, citas, contenido, horarios, inicio, inventario, propietarios, solicitudes,
+                               usuarios)
 from app.security import CsrfInvalido, DebeCambiarPassword, NoAutenticado, SinPermiso
 from app.templating import CARPETA, render
 
@@ -41,7 +42,8 @@ async def cabeceras_de_seguridad(request: Request, call_next):
 
 
 app.mount("/static", StaticFiles(directory=CARPETA / "static"), name="static")
-for modulo in (publico, chat_api, auth, inicio, citas, solicitudes, propietarios, horarios, contenido, usuarios):
+for modulo in (publico, chat_api, auth, inicio, citas, solicitudes, propietarios, caja, inventario, horarios,
+               contenido, usuarios):
     app.include_router(modulo.router)
 
 

@@ -50,6 +50,9 @@ def _semana(db: Session, lunes):
     abiertos = [h for h in horarios.values() if h.abierto and h.apertura and h.cierre]
     primera = min((h.apertura for h in abiertos), default=time(9))
     ultima = max((h.cierre for h in abiertos), default=time(19))
+    for rango in rangos.values():   # días con horario especial
+        if rango:
+            primera, ultima = min(primera, rango[0].time()), max(ultima, rango[1].time())
     for c in citas:
         primera = min(primera, c.inicio.time())
         ultima = max(ultima, c.fin.time())
@@ -177,6 +180,6 @@ def disponibilidad(fecha: str, servicio_id: int, excluir: int | None = None, db:
 @router.get("/panel/api/propietarios/{propietario_id}/mascotas")
 def mascotas(propietario_id: int, db: Session = Depends(get_db), yo: Usuario = Depends(requiere_usuario)):
     propietario = db.get(Propietario, propietario_id)
-    if not propietario:
+    if not propietario or propietario.archivado:
         raise HTTPException(404, "El propietario no existe.")
     return {"mascotas": [{"id": m.id, "nombre": m.nombre, "especie": m.especie} for m in propietario.mascotas]}

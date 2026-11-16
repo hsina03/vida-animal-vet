@@ -1,0 +1,39 @@
+# Corre las pruebas automáticamente en GitHub cada vez que se sube código
+# o se abre un Pull Request. El resultado aparece en la pestaña "Actions"
+# y como una palomita verde (o una X roja) junto a cada commit.
+name: Pruebas
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:   # permite correrlas a mano desde la pestaña Actions
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Correr las pruebas y guardar la evidencia
+        run: python scripts/correr_pruebas.py
+
+      - name: Mostrar el resumen en la página de la ejecución
+        if: always()
+        run: cat docs/pruebas/evidencia/resumen.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar la evidencia como archivo descargable
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencia-pruebas
+          path: docs/pruebas/evidencia/

@@ -35,13 +35,13 @@
       </div>
     </div>
     <div class="panel">
-      <div class="panel-h"><h2>Días sin servicio</h2>{% if not solo_lectura %}<div class="sp"><button class="btn btn-ghost btn-sm" type="button" data-modal="m-dia">{{ ic("i-plus") }}Agregar</button></div>{% endif %}</div>
+      <div class="panel-h"><h2>Días sin servicio u horario especial</h2>{% if not solo_lectura %}<div class="sp"><button class="btn btn-ghost btn-sm" type="button" data-modal="m-dia">{{ ic("i-plus") }}Agregar</button></div>{% endif %}</div>
       <div class="panel-b" style="padding-top:6px;padding-bottom:6px"><ul class="off-list">
         {% for d in sin_servicio %}
-        <li>{{ ic("i-cal") }}<div><b>{{ d.fecha|fecha_larga }}</b></div><span>{{ d.motivo }}</span>
-          {% if not solo_lectura %}<form class="inline" method="post" action="/panel/horarios/dias-sin-servicio/{{ d.id }}/eliminar" data-confirmar="¿Quitar el {{ d.fecha|fecha_larga|lower }} de los días sin servicio?">{{ csrf(request) }}<button class="btn-icon" style="padding:4px;border:0" aria-label="Quitar">{{ ic("i-x") }}</button></form>{% endif %}</li>
+        <li>{{ ic("i-clock" if d.horario_especial else "i-cal") }}<div><b>{{ d.fecha|fecha_larga }}</b><small style="display:block;color:var(--ink-2)">{% if d.horario_especial %}Horario especial: {{ d.apertura|hora }} a {{ d.cierre|hora }}{% else %}Cerrado todo el día{% endif %}</small></div><span>{{ d.motivo }}</span>
+          {% if not solo_lectura %}<form class="inline" method="post" action="/panel/horarios/dias-sin-servicio/{{ d.id }}/eliminar" data-confirmar="¿Quitar el cambio del {{ d.fecha|fecha_larga|lower }}? Ese día vuelve al horario habitual.">{{ csrf(request) }}<button class="btn-icon" style="padding:4px;border:0" aria-label="Quitar">{{ ic("i-x") }}</button></form>{% endif %}</li>
         {% else %}
-        <li style="color:var(--ink-3)">No hay días sin servicio próximos.</li>
+        <li style="color:var(--ink-3)">No hay días sin servicio ni horarios especiales próximos.</li>
         {% endfor %}
       </ul></div>
     </div>
@@ -50,13 +50,20 @@
 </div>
 {% endblock %}
 {% block modales %}
-<template id="m-dia" data-titulo="Agregar día sin servicio">
-  <form method="post" action="/panel/horarios/dias-sin-servicio">{{ csrf(request) }}
+<template id="m-dia" data-titulo="Día sin servicio u horario especial">
+  <form method="post" action="/panel/horarios/dias-sin-servicio" data-dia-especial>{{ csrf(request) }}
     <div class="modal-b">
       <div class="field"><label for="of-f">Fecha</label><input id="of-f" type="date" name="fecha" min="{{ hoy.isoformat() }}" required></div>
+      <div class="field"><label>Ese día la clínica…</label>
+        <label class="check"><input type="radio" name="tipo" value="cerrado" checked> No abre (cerrado todo el día)</label>
+        <label class="check"><input type="radio" name="tipo" value="horario"> Abre con otro horario</label></div>
+      <div class="grid2" data-horario-especial hidden>
+        <div class="field"><label for="of-a">Abre</label><select id="of-a" name="apertura">{% for h in horas %}<option value="{{ h|hora }}" {{ 'selected' if h.hour == 9 and h.minute == 0 }}>{{ h|hora }}</option>{% endfor %}</select></div>
+        <div class="field"><label for="of-c">Cierra</label><select id="of-c" name="cierre">{% for h in horas %}<option value="{{ h|hora }}" {{ 'selected' if h.hour == 14 and h.minute == 0 }}>{{ h|hora }}</option>{% endfor %}</select></div>
+      </div>
       <div class="field"><label for="of-m">Motivo</label><input id="of-m" name="motivo" maxlength="120" placeholder="Ej. Día de la Virgen de Guadalupe"></div>
     </div>
-    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Agregar día</button></div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Guardar</button></div>
   </form>
 </template>
 {% endblock %}

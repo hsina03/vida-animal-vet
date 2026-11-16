@@ -1,7 +1,8 @@
 """Conexión a la base de datos con SQLAlchemy.
 
-Para cambiar a MySQL basta con modificar DATABASE_URL; las opciones
-específicas de SQLite solo se aplican cuando la URL empieza con "sqlite".
+En desarrollo se usa SQLite. En el servidor, DATABASE_URL apunta a una base PostgreSQL
+(por ejemplo Neon) o MySQL, donde los datos se conservan aunque el servidor se reinicie.
+Las opciones específicas de SQLite solo se aplican cuando la URL empieza con "sqlite".
 """
 from collections.abc import Iterator
 
@@ -16,7 +17,17 @@ class Base(DeclarativeBase):
     pass
 
 
+def normalizar_url(url: str) -> str:
+    """Acepta las cadenas que dan los proveedores en la nube (postgres://…, mysql://…)."""
+    for prefijo, driver in (("postgres://", "postgresql+psycopg://"), ("postgresql://", "postgresql+psycopg://"),
+                            ("mysql://", "mysql+pymysql://")):
+        if url.startswith(prefijo):
+            return driver + url[len(prefijo):]
+    return url
+
+
 def crear_engine(url: str) -> Engine:
+    url = normalizar_url(url)
     if url.startswith("sqlite"):
         engine = create_engine(url, connect_args={"check_same_thread": False, "timeout": 30})
 

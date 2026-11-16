@@ -475,3 +475,93 @@ a.btn-icon{text-decoration:none}
   .site-head .btn .ic{display:none}
   .hero h1{font-size:34px}
 }
+
+[hidden]{display:none!important}
+.t td.num{white-space:nowrap}
+
+/* ---------------- Búsqueda por letra ---------------- */
+.letras{display:flex;flex-wrap:wrap;gap:4px;margin:-6px 0 18px}
+.letras a{min-width:30px;text-align:center;padding:4px 7px;border-radius:7px;font-size:13.5px;font-weight:700;color:var(--ink-2);text-decoration:none;border:1.5px solid transparent}
+.letras a:hover{background:#fff;border-color:var(--line)}
+.letras a.on{background:var(--lav-2);color:var(--purple)}
+
+/* ---------------- Fotos de mascotas y expediente ---------------- */
+.pet.on{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple) inset}
+.pet-foto{position:relative;border:0;padding:0;cursor:pointer;overflow:hidden}
+.pet-foto img{width:100%;height:100%;object-fit:cover;display:block}
+.pet-foto:hover{box-shadow:0 0 0 2px var(--purple)}
+.pet-cam{position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center}
+.pet-cam .ic{width:12px;height:12px}
+.foto-prev{margin-bottom:14px;text-align:center}
+.foto-prev img{max-width:100%;max-height:260px;border-radius:12px;border:1px solid var(--line)}
+.exp-h{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:6px 24px 0;margin-top:6px}
+.exp-h .sp{margin-left:auto}
+.exp{list-style:none;margin:0;padding:12px 24px 20px}
+.exp li{display:grid;grid-template-columns:78px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.exp li:last-child{border-bottom:0}
+.exp-fecha{text-align:center;background:var(--canvas);border:1px solid var(--line);border-radius:10px;padding:6px 4px;align-self:start}
+.exp-fecha b{display:block;font-size:14px}.exp-fecha span{font-size:12.5px;color:var(--ink-3)}
+.exp-t{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.exp-t .acts{margin-left:auto}
+.exp-c p{margin:6px 0 0;font-size:14.5px;color:var(--ink-2);white-space:pre-line}
+.exp-c p b{color:var(--ink)}
+.exp-c small{display:block;margin-top:6px;color:var(--ink-3);font-size:13px}
+.exp li.exp-vacio{display:block;color:var(--ink-3)}
+
+/* ---------------- Inventario ---------------- */
+select.filtro{border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;font-size:14.5px;color:var(--ink)}
+.hist.mov li{display:grid;grid-template-columns:56px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.hist.mov li:last-child{border-bottom:0}
+.hist.mov small{display:block;color:var(--ink-3)}
+.mov-mas,.mov-menos{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.mov-mas{color:var(--ok)}.mov-menos{color:var(--err)}
+
+/* ---------------- Caja ---------------- */
+.pos{display:grid;grid-template-columns:1.6fr 1fr;gap:20px;align-items:start}
+.pos-buscar{position:relative}
+.pos-res{display:grid;gap:6px;margin-top:8px}
+.pos-res .vacio{color:var(--ink-3);font-size:14px}
+.pos-item{display:grid;grid-template-columns:1fr auto;gap:2px 12px;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer}
+.pos-item:hover{border-color:var(--purple);background:var(--lav)}
+.pos-item small{grid-column:1;color:var(--ink-3);font-size:13px}
+.pos-item span{grid-row:1 / span 2;grid-column:2;align-self:center;font-weight:700;color:var(--purple)}
+.pos-carrito{border:1px solid var(--line);border-radius:12px;margin-bottom:14px}
+.pos-cant{width:72px;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px}
+.pos-aviso{color:var(--err);font-weight:600}
+.pos-tot{display:grid;gap:8px;margin:0 0 16px;padding:14px 16px;background:var(--canvas);border-radius:12px}
+.pos-tot>div{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pos-tot input{width:120px;text-align:right;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px}
+.pos-total{border-top:1px solid var(--line);padding-top:8px;font-size:20px;font-family:var(--f-head)}
+.pos-total b{font-weight:800;color:var(--purple)}
+.pos-metodo label{position:relative;border-radius:7px;padding:6px 14px;font-size:14px;font-weight:600;color:var(--ink-2);cursor:pointer}
+.pos-metodo label.on{background:var(--lav-2);color:var(--purple)}
+.pos-cambio{font-family:var(--f-head);font-size:22px;font-weight:800;color:var(--ok);padding:6px 0}
+
+/* ---------------- Ticket ---------------- */
+.ticket{max-width:380px;margin:0 auto;padding:24px;font-size:14.5px}
+.ticket-h{text-align:center;display:grid;gap:2px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--line)}
+.ticket-h b{font-family:var(--f-head);font-size:18px;color:var(--wine)}
+.ticket-h span{color:var(--ink-2);font-size:13px}
+.ticket-logo{width:44px;height:44px;margin:0 auto 4px}
+.ticket-row{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.ticket-row span:first-child{color:var(--ink-2)}
+.ticket-total{font-size:18px;border-top:1px dashed var(--line);margin-top:6px;padding-top:8px}
+.ticket-t{width:100%;border-collapse:collapse;margin:12px 0;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line)}
+.ticket-t th{text-align:left;font-size:12.5px;color:var(--ink-3);padding:6px 0}
+.ticket-t td{padding:6px 0;vertical-align:top}
+.ticket-t td:not(:first-child),.ticket-t th:not(:first-child){text-align:right;padding-left:8px;white-space:nowrap}
+.ticket-t small{color:var(--ink-3)}
+.ticket-n{text-align:center;color:var(--ink-3);font-size:12.5px;margin:12px 0 0}
+
+@media (max-width:960px){
+  .pos{grid-template-columns:1fr}
+  .exp li{grid-template-columns:1fr}
+  .exp-fecha{display:flex;gap:6px;justify-content:flex-start;width:max-content;padding:4px 10px}
+}
+@media print{
+  .side,.top,.no-print,.toast,.scrim{display:none!important}
+  .admin-layout{display:block}
+  .view{padding:0}
+  .panel{border:0;box-shadow:none}
+  .ticket{max-width:none;padding:0}
+}

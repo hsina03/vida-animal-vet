@@ -1,0 +1,62 @@
+{% extends "panel/base.html" %}
+{% from "_macros.html" import ic, badge, csrf %}
+{% block vista %}
+<div class="toolbar no-print">
+  <a class="btn btn-ghost" href="/panel/caja?fecha={{ dia.isoformat() }}">{{ ic("i-left") }}Volver a caja</a>
+  <div class="datenav">
+    <a class="btn-icon" href="/panel/caja/corte?fecha={{ (dia|sumar_dias(-1)).isoformat() }}" aria-label="Día anterior">{{ ic("i-left") }}</a>
+    <span>{{ dia|fecha_larga(False) }}</span>
+    <a class="btn-icon" href="/panel/caja/corte?fecha={{ (dia|sumar_dias(1)).isoformat() }}" aria-label="Día siguiente">{{ ic("i-right") }}</a>
+  </div>
+  <div class="tb-r"><button class="btn btn-ghost" type="button" data-imprimir>{{ ic("i-printer") }}Imprimir corte</button></div>
+</div>
+<div class="kpis">
+  <div class="kpi"><span class="kpi-ic">{{ ic("i-cash") }}</span><div><b>{{ resumen.total|dinero }}</b><span>Total cobrado ({{ resumen.ventas }} ventas)</span></div></div>
+  {% for clave, nombre in metodos.items() %}
+  <div class="kpi"><span class="kpi-ic">{{ ic("i-cash" if clave == "efectivo" else "i-file") }}</span><div><b>{{ resumen.por_metodo[clave]|dinero }}</b><span>{{ nombre }}</span></div></div>
+  {% endfor %}
+</div>
+<div class="dash">
+  <div class="panel">
+    <div class="panel-h"><h2>Detalle de ventas</h2><div class="sp"><span class="src">Servicios {{ resumen.servicios|dinero }} · Productos {{ resumen.productos|dinero }} · Descuentos {{ resumen.descuentos|dinero }}{% if resumen.canceladas %} · {{ resumen.canceladas }} canceladas{% endif %}</span></div></div>
+    <div class="table-wrap"><table class="t">
+      <thead><tr><th>Folio</th><th>Hora</th><th>Cliente</th><th>Atendió</th><th>Pago</th><th>Total</th></tr></thead>
+      <tbody>
+      {% for v in ventas|reverse %}
+      <tr class="{{ 'cx' if v.cancelada }}"><td class="num"><a href="/panel/caja/ventas/{{ v.id }}" style="text-decoration:none">{{ v.folio }}</a></td><td>{{ v.creado|hora }}</td>
+        <td>{{ v.propietario.nombre if v.propietario else "Público" }}</td><td>{{ v.usuario.nombre if v.usuario else "—" }}</td>
+        <td>{% if v.cancelada %}{{ badge("cancelada", "Cancelada") }}{% else %}{{ v.metodo_txt }}{% endif %}</td><td class="num">{{ v.total|dinero }}</td></tr>
+      {% else %}
+      <tr><td colspan="6" style="color:var(--ink-3)">No hubo ventas este día.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+  <div style="display:grid;gap:20px">
+    <form class="panel no-print" method="post" action="/panel/caja/corte">{{ csrf(request) }}
+      <input type="hidden" name="fecha" value="{{ dia.isoformat() }}">
+      <div class="panel-h"><h2>Registrar corte</h2></div>
+      <div class="panel-b">
+        <p class="mini-ctx">Cuenta el efectivo de la caja. El sistema espera el fondo inicial más {{ resumen.por_metodo["efectivo"]|dinero }} cobrados en efectivo.</p>
+        <div class="grid2"><div class="field"><label for="ct-f">Fondo inicial</label><input id="ct-f" name="fondo" inputmode="decimal" placeholder="0.00"></div>
+          <div class="field"><label for="ct-c">Efectivo contado</label><input id="ct-c" name="contado" inputmode="decimal" required placeholder="0.00"></div></div>
+        <div class="field"><label for="ct-n">Notas (opcional)</label><input id="ct-n" name="notas" maxlength="300"></div>
+        <button class="btn btn-purple btn-sm">{{ ic("i-check") }}Registrar corte</button>
+      </div>
+    </form>
+    <div class="panel">
+      <div class="panel-h"><h2>Cortes registrados</h2></div>
+      <ul class="hist">
+        {% for c in cortes %}
+        <li><b>{{ c.creado|hora }}</b> · {{ c.usuario.nombre if c.usuario else "—" }}<br>
+          <small>Esperado {{ (c.fondo_inicial + c.total_efectivo)|dinero }} · Contado {{ c.efectivo_contado|dinero }} ·
+          {% if c.diferencia == 0 %}<span class="badge b-aten">Cuadra</span>{% elif c.diferencia > 0 %}<span class="badge b-pend">Sobran {{ c.diferencia|dinero }}</span>{% else %}<span class="badge b-urg">Faltan {{ (-c.diferencia)|dinero }}</span>{% endif %}
+          {% if c.notas %}· {{ c.notas }}{% endif %}</small></li>
+        {% else %}
+        <li style="color:var(--ink-3)">Aún no se registra el corte de este día.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
