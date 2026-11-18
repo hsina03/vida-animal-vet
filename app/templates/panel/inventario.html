@@ -1,0 +1,122 @@
+{% extends "panel/base.html" %}
+{% from "_macros.html" import ic, badge, csrf %}
+{% block vista %}
+<div class="kpis">
+  <a class="kpi" href="/panel/inventario"><span class="kpi-ic">{{ ic("i-box") }}</span><div><b>{{ total_activos }}</b><span>Productos activos</span></div></a>
+  <a class="kpi warn-k" href="/panel/inventario?bajos=1"><span class="kpi-ic">{{ ic("i-alert") }}</span><div><b>{{ total_bajos }}</b><span>En o bajo el mínimo</span></div></a>
+  <div class="kpi alert-k"><span class="kpi-ic">{{ ic("i-cal") }}</span><div><b>{{ por_caducar }}</b><span>Caducan en 30 días</span></div></div>
+  {% if yo.es_admin %}<div class="kpi"><span class="kpi-ic">{{ ic("i-cash") }}</span><div><b>{{ valor|dinero }}</b><span>Valor del inventario (costo)</span></div></div>{% endif %}
+</div>
+
+<div class="toolbar">
+  <form class="search" method="get" action="/panel/inventario" role="search">
+    {{ ic("i-search") }}<label for="i-search" class="sr">Buscar producto</label>
+    <input id="i-search" name="q" value="{{ q }}" placeholder="Buscar por nombre o código" autocomplete="off">
+    {% if categoria %}<input type="hidden" name="categoria" value="{{ categoria }}">{% endif %}
+  </form>
+  <form method="get" action="/panel/inventario">
+    <label for="i-cat" class="sr">Categoría</label>
+    <select id="i-cat" name="categoria" class="filtro" data-autoenviar-select>
+      <option value="">Todas las categorías</option>
+      {% for c in categorias %}<option {{ 'selected' if c == categoria }}>{{ c }}</option>{% endfor %}
+    </select>
+  </form>
+  <div class="seg">
+    <a class="{{ 'on' if not bajos and not bajas }}" href="/panel/inventario">Todos</a>
+    <a class="{{ 'on' if bajos }}" href="/panel/inventario?bajos=1">Por surtir</a>
+    {% if yo.es_admin %}<a class="{{ 'on' if bajas }}" href="/panel/inventario?bajas=1">Dados de baja</a>{% endif %}
+  </div>
+  {% if yo.es_admin %}<div class="tb-r"><button class="btn btn-purple" type="button" data-modal="m-producto" data-titulo="Nuevo producto" data-accion="/panel/inventario" data-valores='{"se_vende": true, "existencia": "0", "minimo": "0", "unidad": "pieza"}'>{{ ic("i-plus") }}Nuevo producto</button></div>{% endif %}
+</div>
+
+<div class="dash">
+  <div class="panel">
+    <div class="table-wrap"><table class="t">
+      <thead><tr><th>Producto</th><th>Existencia</th><th>Precio</th><th>Caducidad</th><th></th></tr></thead>
+      <tbody>
+      {% for p in productos %}
+      <tr class="{{ 'marcada' if seleccionado and p.id == seleccionado.id }}">
+        <td><a href="/panel/inventario?ver={{ p.id }}{% if bajas %}&bajas=1{% endif %}" style="text-decoration:none;color:inherit"><b>{{ p.nombre }}</b></a><br><span class="src">{{ p.categoria }}{% if p.codigo %} · {{ p.codigo }}{% endif %}{% if not p.se_vende %} · Uso interno{% endif %}</span></td>
+        <td class="num">{{ p.existencia|cantidad }} {{ p.unidad }}{% if p.bajo_minimo and p.activo %}<br><span class="badge b-urg">Mínimo {{ p.minimo|cantidad }}</span>{% endif %}</td>
+        <td class="num">{{ p.precio|dinero if p.se_vende else "—" }}</td>
+        <td>{% if p.caducidad %}<span class="{{ 'badge b-urg' if p.caducidad <= limite_caducidad }}">{{ p.caducidad|fecha_corta }} {{ p.caducidad.year }}</span>{% else %}—{% endif %}</td>
+        <td><div class="acts">
+          {% if p.activo %}
+          <button type="button" class="btn-icon" title="Entrada" aria-label="Registrar entrada de {{ p.nombre }}" data-modal="m-movimiento" data-titulo="Entrada de {{ p.nombre }}" data-accion="/panel/inventario/{{ p.id }}/movimiento" data-valores='{{ {"tipo": "entrada", "ctx": "Existencia actual: " ~ (p.existencia|cantidad) ~ " " ~ p.unidad, "volver_a": url_actual(request)}|tojson }}'>{{ ic("i-plus") }}</button>
+          <button type="button" class="btn-icon" title="Salida" aria-label="Registrar salida de {{ p.nombre }}" data-modal="m-movimiento" data-titulo="Salida de {{ p.nombre }}" data-accion="/panel/inventario/{{ p.id }}/movimiento" data-valores='{{ {"tipo": "salida", "ctx": "Existencia actual: " ~ (p.existencia|cantidad) ~ " " ~ p.unidad, "volver_a": url_actual(request)}|tojson }}'>{{ ic("i-minus") }}</button>
+          {% endif %}
+          {% if yo.es_admin %}
+          <button type="button" class="btn-icon" title="Editar" aria-label="Editar {{ p.nombre }}" data-modal="m-producto" data-titulo="Editar {{ p.nombre }}" data-accion="/panel/inventario/{{ p.id }}"
+            data-valores='{{ {"nombre": p.nombre, "categoria": p.categoria, "codigo": p.codigo, "unidad": p.unidad, "minimo": p.minimo|string, "costo": p.costo|string, "precio": p.precio|string, "se_vende": p.se_vende, "caducidad": p.caducidad.isoformat() if p.caducidad else "", "edicion": "1"}|tojson }}'>{{ ic("i-edit") }}</button>
+          {% endif %}
+        </div></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5"><div class="empty">{{ ic("i-box") }}<h3>{% if q or categoria or bajos %}No hay productos con ese filtro{% elif bajas %}No hay productos dados de baja{% else %}Aún no hay productos{% endif %}</h3><p>{% if yo.es_admin and not bajas %}Registra el primero con «Nuevo producto».{% else %}Cambia la búsqueda o el filtro.{% endif %}</p></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="panel">
+    {% if seleccionado %}
+    <div class="panel-h"><h2>{{ seleccionado.nombre }}</h2><div class="sp"><a class="btn btn-ghost btn-sm" href="/panel/inventario">Ver todos</a></div></div>
+    <div class="panel-b kv" style="padding-bottom:6px">
+      <div class="facts" style="padding:0;border:0;grid-template-columns:repeat(2,1fr)">
+        <div><b>Existencia</b>{{ seleccionado.existencia|cantidad }} {{ seleccionado.unidad }}</div>
+        <div><b>Mínimo</b>{{ seleccionado.minimo|cantidad }} {{ seleccionado.unidad }}</div>
+        {% if yo.es_admin %}<div><b>Costo</b>{{ seleccionado.costo|dinero }}</div>{% endif %}
+        <div><b>Precio</b>{{ seleccionado.precio|dinero if seleccionado.se_vende else "Uso interno" }}</div>
+      </div>
+      {% if yo.es_admin %}<div style="display:flex;gap:8px;flex-wrap:wrap">
+        {% if seleccionado.activo %}<button class="btn btn-ghost btn-sm" type="button" data-modal="m-movimiento" data-titulo="Ajustar existencia de {{ seleccionado.nombre }}" data-accion="/panel/inventario/{{ seleccionado.id }}/movimiento" data-valores='{{ {"tipo": "ajuste", "ctx": "El sistema registra " ~ (seleccionado.existencia|cantidad) ~ " " ~ seleccionado.unidad ~ ". Escribe lo que contaste.", "volver_a": url_actual(request)}|tojson }}'>{{ ic("i-edit") }}Ajustar existencia</button>{% endif %}
+        <form class="inline" method="post" action="/panel/inventario/{{ seleccionado.id }}/baja" {% if seleccionado.activo %}data-confirmar="¿Dar de baja {{ seleccionado.nombre }}? Ya no aparecerá en caja ni en el inventario; su historial se conserva."{% endif %}>{{ csrf(request) }}<button class="btn btn-ghost btn-sm">{{ ic("i-x" if seleccionado.activo else "i-check") }}{{ "Dar de baja" if seleccionado.activo else "Reactivar" }}</button></form>
+      </div>{% endif %}
+    </div>
+    <h3 class="sub-h">Movimientos</h3>
+    {% else %}
+    <div class="panel-h"><h2>Movimientos recientes</h2></div>
+    {% endif %}
+    <ul class="hist mov">
+      {% for m in movimientos %}
+      <li><span class="{{ 'mov-mas' if m.cantidad > 0 else 'mov-menos' }}">{{ "+" if m.cantidad > 0 else "" }}{{ m.cantidad|cantidad }}</span>
+        <div><b>{{ m.tipo_txt }}</b>{% if not seleccionado %} · {{ m.producto.nombre }}{% endif %}<small>{{ m.creado.date()|fecha_corta }}, {{ m.creado|hora }} · {{ m.usuario.nombre if m.usuario else "—" }}{% if m.motivo %} · {{ m.motivo }}{% endif %} · Quedan {{ m.existencia_final|cantidad }}</small></div></li>
+      {% else %}
+      <li style="color:var(--ink-3)">Sin movimientos todavía.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block modales %}
+<template id="m-producto" data-titulo="Producto">
+  <form method="post" data-producto>{{ csrf(request) }}
+    <div class="modal-b">
+      <div class="field"><label for="pr-n">Nombre</label><input id="pr-n" name="nombre" maxlength="120" required placeholder="Ej. Vacuna antirrábica, Croquetas cachorro 2 kg"></div>
+      <div class="grid2"><div class="field"><label for="pr-c">Categoría</label><select id="pr-c" name="categoria">{% for c in categorias %}<option>{{ c }}</option>{% endfor %}</select></div>
+        <div class="field"><label for="pr-cod">Código (opcional)</label><input id="pr-cod" name="codigo" maxlength="40" placeholder="Código de barras o clave"></div></div>
+      <div class="grid2"><div class="field"><label for="pr-u">Unidad</label><select id="pr-u" name="unidad">{% for u in unidades %}<option>{{ u }}</option>{% endfor %}</select></div>
+        <div class="field" data-solo-alta><label for="pr-e">Existencia inicial</label><input id="pr-e" name="existencia" inputmode="decimal"></div></div>
+      <div class="grid2"><div class="field"><label for="pr-m">Existencia mínima</label><input id="pr-m" name="minimo" inputmode="decimal"><span class="hint">Avisa cuando haya que surtir.</span></div>
+        <div class="field"><label for="pr-cad">Caducidad (opcional)</label><input id="pr-cad" type="date" name="caducidad"></div></div>
+      <div class="grid2"><div class="field"><label for="pr-co">Costo</label><input id="pr-co" name="costo" inputmode="decimal" placeholder="0.00"></div>
+        <div class="field"><label for="pr-p">Precio de venta</label><input id="pr-p" name="precio" inputmode="decimal" placeholder="0.00"></div></div>
+      <div class="field"><label class="check"><input type="checkbox" name="se_vende" value="1"> Se vende en caja (si no, es de uso interno)</label></div>
+      <input type="hidden" name="edicion">
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Guardar producto</button></div>
+  </form>
+</template>
+<template id="m-movimiento" data-titulo="Movimiento">
+  <form method="post">{{ csrf(request) }}
+    <input type="hidden" name="tipo"><input type="hidden" name="volver_a">
+    <div class="modal-b">
+      <p class="mini-ctx" data-fill="ctx"></p>
+      <div class="field"><label for="mv-c">Cantidad</label><input id="mv-c" name="cantidad" inputmode="decimal" required></div>
+      <div class="field"><label for="mv-m">Motivo</label><input id="mv-m" name="motivo" maxlength="200" placeholder="Ej. Compra al proveedor, uso en cirugía, caducado"></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple">{{ ic("i-check") }}Registrar</button></div>
+  </form>
+</template>
+{% endblock %}

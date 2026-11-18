@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ic, marca %}
+{% block titulo %}{{ titulo }} · Vida Animal II{% endblock %}
+{% block cuerpo %}
+<main class="error-page">
+  <div class="panel">
+    {{ marca("/") }}
+    <h1>{{ titulo }}</h1>
+    <p>{{ mensaje }}</p>
+    <a class="btn btn-purple" href="{{ volver }}">{{ ic("i-left") }}Regresar</a>
+  </div>
+</main>
+{% endblock %}

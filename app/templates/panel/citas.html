@@ -1,0 +1,72 @@
+{% extends "panel/base.html" %}
+{% from "_macros.html" import ic, badge, icono_mascota %}
+{% from "panel/_cita_macros.html" import botones_cita with context %}
+{% block vista %}
+{% set f = dia.isoformat() %}
+<div class="toolbar">
+  <div class="seg" aria-label="Vista">
+    <a class="{{ 'on' if vista != 'semana' }}" href="/panel/citas?vista=lista&fecha={{ f }}">{{ ic("i-list") }}Lista</a>
+    <a class="{{ 'on' if vista == 'semana' }}" href="/panel/citas?vista=semana&fecha={{ f }}">{{ ic("i-grid") }}Semana</a>
+  </div>
+  {% if vista == "semana" %}
+  <div class="wk-nav">
+    <a class="btn-icon" href="/panel/citas?vista=semana&fecha={{ (lunes|sumar_dias(-7)).isoformat() }}" aria-label="Semana anterior">{{ ic("i-left") }}</a>
+    <span>Semana del {{ lunes.day }} de {{ tiempo.MESES[lunes.month - 1] }}</span>
+    <a class="btn-icon" href="/panel/citas?vista=semana&fecha={{ (lunes|sumar_dias(7)).isoformat() }}" aria-label="Semana siguiente">{{ ic("i-right") }}</a>
+    <a class="btn btn-ghost btn-sm" href="/panel/citas?vista=semana">Hoy</a>
+  </div>
+  {% else %}
+  <div class="datenav">
+    <a class="btn-icon" href="/panel/citas?fecha={{ (dia|sumar_dias(-1)).isoformat() }}&estado={{ estado }}" aria-label="Día anterior">{{ ic("i-left") }}</a>
+    <span>{{ dia|fecha_larga(False) }}</span>
+    <a class="btn-icon" href="/panel/citas?fecha={{ (dia|sumar_dias(1)).isoformat() }}&estado={{ estado }}" aria-label="Día siguiente">{{ ic("i-right") }}</a>
+    {% if dia != hoy %}<a class="btn btn-ghost btn-sm" href="/panel/citas?estado={{ estado }}">Hoy</a>{% endif %}
+  </div>
+  <div class="seg">
+    {% for e in filtros %}<a class="{{ 'on' if e == estado }}" href="/panel/citas?fecha={{ f }}&estado={{ e }}">{{ "Todas" if e == "todas" else estados[e] ~ "s" }}</a>{% endfor %}
+  </div>
+  {% endif %}
+  <div class="tb-r"><button class="btn btn-purple" type="button" data-modal="m-nueva" data-valores='{{ {"fecha": f}|tojson }}'>{{ ic("i-plus") }}Nueva cita</button></div>
+</div>
+
+{% if vista == "semana" %}
+<div class="table-wrap">
+<div class="week" style="grid-template-columns:64px repeat({{ dias|length }},minmax(110px,1fr))">
+  <div class="wk-h"></div>
+  {% for d in dias %}<a class="wk-h {{ 'today' if d == hoy }}" style="text-decoration:none;color:inherit" href="/panel/citas?fecha={{ d.isoformat() }}">{{ tiempo.DIAS_CORTOS[d.weekday()] }}<small>{{ d.day }} {{ tiempo.MESES_CORTOS[d.month - 1] }}</small></a>{% endfor %}
+  {% for t in filas %}
+  <div class="wk-t">{{ t|hora if t.minute == 0 or paso_min != 30 else "" }}</div>
+    {% for d in dias %}{% set cerrada, eventos = celdas[(d, t)] %}
+    <div class="wk-c {{ 'closed' if cerrada }}">
+      {% for c in eventos %}
+      {% set n = ((c.fin - c.inicio).total_seconds() / 60 / paso_min)|round(0, 'ceil')|int %}
+      <a class="ev {{ c.estado|clase_estado }}" href="/panel/citas?fecha={{ d.isoformat() }}&marcar={{ c.id }}" style="height:{{ n * 52 - 6 }}px" title="{{ c.inicio|hora }} {{ c.mascota.nombre }}: {{ c.servicio.nombre }} ({{ c.estado_txt }})"><b>{{ c.inicio|hora }} {{ c.mascota.nombre }}</b>{{ c.servicio.nombre }}</a>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  {% endfor %}
+</div>
+</div>
+{% else %}
+{% if motivo_cerrado %}<div class="readonly-note">{{ ic("i-cal") }}{{ motivo_cerrado }}. No se pueden registrar citas este día.</div>{% endif %}
+<div class="panel table-wrap">
+  <table class="t"><thead><tr><th>Hora</th><th>Mascota</th><th>Servicio</th><th>Propietario</th><th>Origen</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
+  <tbody>
+    {% for c in citas %}
+    <tr class="{{ 'cx' if c.estado == 'cancelada' }} {{ 'marcada' if c.id == marcar }}" id="cita-{{ c.id }}">
+      <td class="num">{{ c.inicio|hora }}</td>
+      <td><b>{{ c.mascota.nombre }}</b> <span class="src">{{ icono_mascota(c.mascota.especie) }}{{ c.mascota.especie }}</span></td>
+      <td>{{ c.servicio.nombre }}{% if c.estado == 'cancelada' and c.motivo_cancelacion %}<br><span class="src">Motivo: {{ c.motivo_cancelacion }}</span>{% endif %}</td>
+      <td><a href="/panel/propietarios?sel={{ c.propietario.id }}" style="text-decoration:none">{{ c.propietario.nombre }}</a><br><span class="src">{{ c.propietario.telefono|telefono }}</span></td>
+      <td><span class="src">{{ ic("i-chat" if c.origen == "chat" else "i-user") }}{{ "Asistente" if c.origen == "chat" else "Personal" }}</span></td>
+      <td>{{ badge(c.estado, c.estado_txt) }}</td>
+      <td>{{ botones_cita(c, puede) }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7"><div class="empty">{{ ic("i-cal") }}<h3>Sin citas en este filtro</h3><p>Cambia el día o el estado, o registra una cita nueva.</p></div></td></tr>
+    {% endfor %}
+  </tbody></table>
+</div>
+{% endif %}
+{% endblock %}
+{% block modales %}{% include "panel/_modales_cita.html" %}{% endblock %}

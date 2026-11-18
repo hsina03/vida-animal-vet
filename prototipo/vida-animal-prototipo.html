@@ -1,0 +1,1335 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vida Animal II — Prototipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS (de logo Vida Animal) ============ */
+:root{
+  --purple:#6B4391;      /* cruz del logo */
+  --purple-700:#553274;
+  --purple-900:#3A2350;  /* barra lateral */
+  --wine:#9A2456;        /* texto "VIDA ANIMAL" */
+  --wine-700:#7E1C46;
+  --lav:#F6ECFD;         /* fondo del logo */
+  --lav-2:#EEE2F8;
+  --line:#E4D6EF;
+  --ink:#2B1F36;
+  --ink-2:#5E5169;
+  --ink-3:#8D8296;
+  --white:#FFFFFF;
+  --canvas:#FBF8FD;
+  --ok-bg:#E6F4EC; --ok:#1F6B45;
+  --warn-bg:#FDF1DC; --warn:#8A5600;
+  --err-bg:#FBE7EA; --err:#B4233C;
+  --info-bg:#E6EEF9; --info:#24508A;
+  --mute-bg:#F1EDF4; --mute:#6B6275;
+  --wa:#1E8E57;
+  --side-ink:#E9DDF5;
+  --r-s:8px; --r-m:14px; --r-l:28px;
+  --f-head:'Nunito', system-ui, sans-serif;
+  --f-body:'Source Sans 3', system-ui, sans-serif;
+  --shadow:0 1px 2px rgba(58,35,80,.06), 0 8px 24px rgba(58,35,80,.08);
+}
+/* ============ MODO WIREFRAME ============ */
+body.wf{
+  --purple:#4A4A4A; --purple-700:#333; --purple-900:#2E2E2E; --wine:#222; --wine-700:#111;
+  --lav:#F1F1F1; --lav-2:#E7E7E7; --line:#CFCFCF; --ink:#1E1E1E; --ink-2:#555; --ink-3:#888;
+  --canvas:#FAFAFA; --ok-bg:#EEE; --ok:#444; --warn-bg:#EEE; --warn:#444; --err-bg:#EEE; --err:#222;
+  --info-bg:#EEE; --info:#444; --mute-bg:#F3F3F3; --mute:#777; --wa:#444; --side-ink:#DDD;
+  --shadow:none;
+}
+body.wf .ph{background:repeating-linear-gradient(45deg,#e4e4e4 0 10px,#efefef 10px 20px)!important;border:1.5px dashed #aaa}
+body.wf .ph img, body.wf .ph svg{visibility:hidden}
+body.wf .ph::after{content:attr(data-ph);position:absolute;inset:0;display:grid;place-items:center;font:600 14px var(--f-body);color:#777}
+body.wf .pulse path{stroke-dasharray:none!important;animation:none!important}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--f-body);color:var(--ink);background:var(--white);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--f-head);margin:0;line-height:1.15;color:var(--ink)}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--purple) 55%,transparent);outline-offset:2px}
+.ic{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.screen{display:none}
+.screen.on{display:block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- botones ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid transparent;border-radius:999px;padding:11px 22px;font-weight:600;font-size:15px;line-height:1;text-decoration:none;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
+.btn-primary{background:var(--wine);color:#fff}
+.btn-primary:hover{background:var(--wine-700)}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-purple:hover{background:var(--purple-700)}
+.btn-ghost{background:transparent;color:var(--purple);border-color:var(--line)}
+.btn-ghost:hover{border-color:var(--purple)}
+.btn-wa{background:var(--wa);color:#fff}
+.btn-danger{background:var(--err);color:#fff}
+.btn-sm{padding:7px 14px;font-size:14px}
+.btn-icon{padding:8px;border-radius:10px;background:transparent;border:1px solid var(--line);color:var(--ink-2);display:inline-flex}
+.btn-icon:hover{color:var(--purple);border-color:var(--purple)}
+.link{background:none;border:0;padding:0;color:var(--purple);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+/* ============ SITIO ============ */
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+.site-head{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.site-head .wrap{display:flex;align-items:center;gap:32px;height:76px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand-mark{width:42px;height:42px}
+.brand-text{display:flex;flex-direction:column;line-height:1}
+.brand-name{white-space:nowrap;font-family:var(--f-head);font-weight:800;font-size:21px;color:var(--wine);letter-spacing:.01em}
+.brand-sub{font-family:var(--f-head);font-weight:300;font-size:13.5px;color:var(--purple);margin-top:3px}
+.site-nav{display:flex;gap:26px;margin-left:auto}
+.site-nav a{text-decoration:none;font-weight:500;color:var(--ink-2);font-size:15.5px}
+.site-nav a:hover{color:var(--purple)}
+.menu-btn{display:none}
+
+.hero{background:var(--lav);position:relative;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:end;padding-top:72px;position:relative;z-index:1}
+.hero-copy{padding-bottom:88px}
+.hero h1{font-size:clamp(38px,4.6vw,60px);font-weight:800;letter-spacing:-.015em;color:var(--ink);max-width:13ch}
+.hero-lead{font-size:19px;color:var(--ink-2);max-width:46ch;margin-top:22px}
+.hero-cta{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap}
+.hero-meta{display:flex;gap:28px;margin-top:40px;flex-wrap:wrap}
+.hero-meta div{display:flex;align-items:center;gap:8px;color:var(--ink-2);font-size:15px}
+.hero-meta .ic{color:var(--purple)}
+.arch{position:relative;aspect-ratio:1.8/1;border-radius:220px 220px 0 0;overflow:hidden;background:var(--lav-2);border:10px solid #fff;border-bottom:0}
+.arch img{width:100%;height:100%;object-fit:cover;object-position:50% 40%;display:block}
+.pulse{position:absolute;left:0;right:0;bottom:10px;width:100%;height:64px;pointer-events:none}
+.pulse path{fill:none;stroke:var(--wine);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2400;stroke-dashoffset:2400;animation:draw 2.4s .3s cubic-bezier(.6,.1,.3,1) forwards;opacity:.55}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.pulse path{animation:none;stroke-dashoffset:0}}
+
+.sec{padding:96px 0}
+.sec-head{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:end;margin-bottom:48px}
+.sec h2{font-size:clamp(30px,3.2vw,42px);font-weight:800;letter-spacing:-.01em}
+.sec-head p{color:var(--ink-2);font-size:17.5px;max-width:52ch}
+
+.svc-groups{display:grid;grid-template-columns:repeat(2,1fr);gap:0 64px}
+.svc-group{border-top:2px solid var(--ink);padding:22px 0 30px}
+.svc-group h3{font-size:15px;font-weight:700;color:var(--wine);margin-bottom:6px;font-family:var(--f-body);letter-spacing:.02em}
+.svc{display:grid;grid-template-columns:44px 1fr;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)}
+.svc:last-child{border-bottom:0}
+.svc-ic{width:44px;height:44px;border-radius:12px;background:var(--lav);color:var(--purple);display:grid;place-items:center}
+.svc h4{font-size:19px;font-weight:700}
+.svc p{color:var(--ink-2);font-size:15.5px;margin-top:3px}
+
+.steps-sec{background:var(--purple-900);color:var(--side-ink)}
+.steps-sec h2{color:#fff}
+.steps-sec .sec-head p{color:var(--side-ink)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;counter-reset:s}
+.step{border-top:1px solid rgba(255,255,255,.25);padding-top:22px;counter-increment:s}
+.step::before{content:counter(s);font-family:var(--f-head);font-weight:800;font-size:44px;color:#E6A9C6;display:block;line-height:1;margin-bottom:14px}
+.step h3{color:#fff;font-size:21px;margin-bottom:8px}
+.step p{font-size:16px;color:var(--side-ink)}
+.steps-sec .btn{margin-top:40px}
+
+.about{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start}
+.about-q{font-family:var(--f-head);font-size:clamp(24px,2.4vw,30px);font-weight:600;line-height:1.35;color:var(--purple);margin-top:22px}
+.values{display:grid;gap:0}
+.value{padding:20px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:28px 1fr;gap:14px}
+.value:first-child{border-top:1px solid var(--line)}
+.value .ic{color:var(--wine);margin-top:3px}
+.value h4{font-size:18px}
+.value p{color:var(--ink-2);font-size:15.5px;margin-top:2px}
+
+.visit{background:var(--lav)}
+.visit-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:stretch}
+.map{position:relative;border-radius:var(--r-l);overflow:hidden;min-height:380px;background:#EFE6F6}
+.map svg{width:100%;height:100%;display:block;position:absolute;inset:0}
+.contact{background:#fff;border-radius:var(--r-l);padding:36px;display:flex;flex-direction:column;gap:22px}
+.contact-row{display:grid;grid-template-columns:24px 1fr;gap:14px}
+.contact-row .ic{color:var(--purple);margin-top:2px}
+.contact-row b{display:block;font-size:14px;color:var(--ink-3);font-weight:600}
+.contact-row span{font-size:17px}
+.hours{width:100%;border-collapse:collapse;font-size:15.5px;margin-top:4px}
+.hours td{padding:3px 0}
+.hours td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.contact .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:auto}
+
+.site-foot{background:var(--ink);color:#CFC4D9;padding:48px 0 36px}
+.site-foot .wrap{display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap}
+.site-foot .brand-name{color:#fff}
+.site-foot .brand-sub{color:#CFC4D9}
+.foot-links{margin-left:auto;display:flex;gap:28px;flex-wrap:wrap}
+.foot-links a,.foot-links button{color:#CFC4D9;background:none;border:0;padding:0;font-size:15px;text-decoration:none}
+.foot-links a:hover,.foot-links button:hover{color:#fff}
+.foot-note{flex-basis:100%;border-top:1px solid rgba(255,255,255,.12);padding-top:20px;margin-top:12px;font-size:13.5px;color:#9F93AA}
+
+/* ---------- chatbot ---------- */
+.chat-fab{position:fixed;right:28px;bottom:28px;z-index:40;display:flex;align-items:center;gap:10px;background:var(--wine);color:#fff;border:0;border-radius:999px;padding:14px 22px 14px 18px;font-weight:600;font-size:15.5px;box-shadow:0 10px 30px rgba(154,36,86,.35)}
+.chat-fab .ic{width:22px;height:22px}
+.chat{position:fixed;right:28px;bottom:28px;z-index:41;width:380px;height:600px;max-height:calc(100vh - 56px);background:#fff;border-radius:22px;box-shadow:0 24px 60px rgba(43,31,54,.28);display:none;flex-direction:column;overflow:hidden;border:1px solid var(--line)}
+.chat.open{display:flex}
+.chat-head{background:var(--purple);color:#fff;padding:16px 16px 16px 18px;display:flex;align-items:center;gap:12px}
+.chat-av{width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center}
+.chat-av svg{width:28px;height:28px}
+.chat-head h3{color:#fff;font-size:16.5px}
+.chat-head small{display:flex;align-items:center;gap:6px;font-size:13px;opacity:.9}
+.chat-head small::before{content:"";width:8px;height:8px;border-radius:50%;background:#7CE0A6}
+.chat-x{margin-left:auto;background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:10px;padding:7px;display:flex}
+.chat-body{flex:1;overflow-y:auto;padding:18px 16px;background:var(--canvas);display:flex;flex-direction:column;gap:10px}
+.msg{max-width:84%;padding:10px 14px;border-radius:16px;font-size:15px;line-height:1.45}
+.msg.bot{background:#fff;border:1px solid var(--line);border-bottom-left-radius:6px;align-self:flex-start}
+.msg.me{background:var(--purple);color:#fff;border-bottom-right-radius:6px;align-self:flex-end}
+.msg.note{align-self:center;background:var(--warn-bg);color:var(--warn);font-size:13.5px;border-radius:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-self:flex-start;max-width:100%}
+.chip{border:1.5px solid var(--purple);color:var(--purple);background:#fff;border-radius:999px;padding:7px 14px;font-size:14px;font-weight:600}
+.chip:hover{background:var(--lav)}
+.chip[disabled]{border-color:var(--line);color:var(--ink-3);text-decoration:line-through;cursor:not-allowed;background:#fff}
+.sum{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;font-size:14.5px;align-self:stretch}
+.sum dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0}
+.sum dt{color:var(--ink-3)}
+.sum dd{margin:0;font-weight:600}
+.sum .row{display:flex;gap:8px;margin-top:12px}
+.chat-foot{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:#fff}
+.chat-foot input{flex:1;border:1.5px solid var(--line);border-radius:999px;padding:10px 16px;outline:none}
+.chat-foot input:focus{border-color:var(--purple)}
+.chat-send{background:var(--purple);color:#fff;border:0;border-radius:50%;width:44px;height:44px;display:grid;place-items:center}
+.typing{display:flex;gap:4px;padding:14px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--ink-3);animation:b 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,60%,100%{opacity:.3;transform:none}30%{opacity:1;transform:translateY(-3px)}}
+
+/* ============ LOGIN ============ */
+.login{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;background:#fff}
+.login-art{background:var(--purple-900);color:var(--side-ink);padding:56px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.login-art .brand-name{color:#fff}.login-art .brand-sub{color:var(--side-ink)}
+.login-art h2{color:#fff;font-size:38px;font-weight:800;margin-top:auto;max-width:14ch}
+.login-art p{margin-top:14px;max-width:40ch;font-size:17px}
+.login-art .pulse{bottom:auto;top:46%;opacity:.8}
+.login-art .pulse path{stroke:#E6A9C6}
+.login-form{display:flex;align-items:center;justify-content:center;padding:48px}
+.login-form form{width:100%;max-width:400px}
+.login-form h1{font-size:32px;font-weight:800}
+.login-form .sub{color:var(--ink-2);margin:8px 0 32px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.field label{font-weight:600;font-size:14.5px}
+.field input,.field select,.field textarea{border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;background:#fff;outline:none;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--purple)}
+.field .hint{font-size:13.5px;color:var(--ink-3)}
+.alert{display:none;gap:10px;align-items:flex-start;background:var(--err-bg);color:var(--err);border-radius:10px;padding:12px 14px;font-size:14.5px;margin-bottom:18px}
+.alert.on{display:flex}
+.alert .ic{margin-top:1px}
+.demo{margin-top:28px;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--ink-2)}
+.demo b{color:var(--ink)}
+.demo .chips{margin-top:10px}
+.demo .chip{font-size:13px;padding:5px 12px}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--ink-2);text-decoration:none;font-size:14.5px;margin-bottom:40px}
+
+/* ============ PANEL ADMIN ============ */
+#s-admin{min-height:100vh;background:var(--canvas)}
+#s-admin.on{display:grid;grid-template-columns:272px 1fr}
+.side{background:var(--purple-900);color:var(--side-ink);padding:22px 14px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.side .brand{padding:0 8px 22px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:14px}
+.side .brand-name{color:#fff;font-size:19px}.side .brand-sub{color:var(--side-ink);font-size:12.5px}
+.side-label{font-size:12.5px;color:#A898B8;padding:14px 12px 6px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--side-ink);font-weight:500;font-size:15px;position:relative}
+.nav-item:hover{background:rgba(255,255,255,.07)}
+.nav-item.on{background:#fff;color:var(--purple-900);font-weight:700}
+.nav-item.on .ic{color:var(--wine)}
+.nav-item .count{margin-left:auto;background:var(--wine);color:#fff;border-radius:999px;font-size:12px;font-weight:700;padding:1px 8px}
+.nav-item.on .count{background:var(--wine)}
+.side-foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+.main{min-width:0}
+.top{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 32px;position:sticky;top:0;z-index:5}
+.top h1{font-size:22px;font-weight:800}
+.top .date{color:var(--ink-3);font-size:14.5px}
+.me{margin-left:auto;display:flex;align-items:center;gap:12px}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--lav-2);color:var(--purple);display:grid;place-items:center;font-family:var(--f-head);font-weight:800;font-size:15px}
+.me b{display:block;font-size:14.5px;line-height:1.2}
+.role{font-size:12.5px;font-weight:700;border-radius:999px;padding:2px 9px;display:inline-block;margin-top:2px}
+.role.admin{background:var(--wine);color:#fff}
+.role.op{background:var(--lav-2);color:var(--purple)}
+.view{display:none;padding:28px 32px 48px}
+.view.on{display:block}
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--r-m)}
+.panel-h{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
+.panel-h h2{font-size:17px;font-weight:800}
+.panel-h .sp{margin-left:auto;display:flex;gap:8px;align-items:center}
+.panel-b{padding:20px}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--r-m);padding:18px 20px;display:flex;gap:14px;align-items:center;text-align:left;width:100%}
+button.kpi:hover{border-color:var(--purple)}
+.kpi-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--lav);color:var(--purple)}
+.kpi.alert-k .kpi-ic{background:var(--err-bg);color:var(--err)}
+.kpi.warn-k .kpi-ic{background:var(--warn-bg);color:var(--warn)}
+.kpi b{font-family:var(--f-head);font-size:28px;font-weight:800;line-height:1;display:block}
+.kpi span{color:var(--ink-2);font-size:14.5px}
+.dash{display:grid;grid-template-columns:1.7fr 1fr;gap:20px;align-items:start}
+
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:grid;grid-template-columns:64px 1fr auto;gap:16px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.tl li:last-child{border-bottom:0}
+.tl time{font-weight:700;font-variant-numeric:tabular-nums;font-size:15px}
+.tl li.now{background:var(--lav)}
+.tl li.now time{color:var(--wine)}
+.who b{font-size:15.5px}
+.who small{display:block;color:var(--ink-2);font-size:14px}
+
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.b-pend{background:var(--warn-bg);color:var(--warn)}
+.b-conf{background:var(--lav-2);color:var(--purple)}
+.b-aten{background:var(--ok-bg);color:var(--ok)}
+.b-canc{background:var(--mute-bg);color:var(--mute)}
+.b-repr{background:var(--info-bg);color:var(--info)}
+.b-urg{background:var(--err-bg);color:var(--err)}
+.b-new{background:var(--lav-2);color:var(--purple)}
+.src{font-size:12.5px;color:var(--ink-3);display:inline-flex;align-items:center;gap:4px}
+.src .ic{width:14px;height:14px}
+
+.attn{list-style:none;margin:0;padding:0}
+.attn li{padding:14px 20px;border-bottom:1px solid var(--line)}
+.attn li:last-child{border-bottom:0}
+.attn p{font-size:14.5px;color:var(--ink-2);margin:4px 0 10px}
+
+.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.search{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:0 12px;min-width:380px}
+.search:focus-within{border-color:var(--purple)}
+.search input{border:0;outline:none;padding:10px 0;flex:1;background:transparent}
+.search .ic{color:var(--ink-3);width:18px;height:18px}
+.seg{display:inline-flex;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;border-radius:7px;padding:6px 12px;font-size:14px;font-weight:600;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px}
+.seg button.on{background:var(--lav-2);color:var(--purple)}
+.seg .ic{width:16px;height:16px}
+.datenav{display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.datenav span{min-width:190px;text-align:center}
+.tb-r{margin-left:auto;display:flex;gap:10px}
+
+table.t{width:100%;border-collapse:collapse;font-size:15px}
+.t th{text-align:left;font-weight:600;font-size:13.5px;color:var(--ink-3);padding:12px 16px;border-bottom:1px solid var(--line);background:var(--canvas)}
+.t td{padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+.t tr:last-child td{border-bottom:0}
+.t tr.cx td{color:var(--ink-3)}
+.t td.num{font-variant-numeric:tabular-nums;font-weight:700}
+.acts{display:flex;gap:6px;justify-content:flex-end}
+.acts .btn-icon{padding:6px}
+.acts .ic{width:17px;height:17px}
+
+.week{display:grid;grid-template-columns:64px repeat(6,1fr);background:#fff;border:1px solid var(--line);border-radius:var(--r-m);overflow:hidden}
+.wk-h{padding:12px 10px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px;text-align:center;background:var(--canvas)}
+.wk-h small{display:block;font-weight:500;color:var(--ink-3)}
+.wk-h.today{color:var(--wine)}
+.wk-t{font-size:12.5px;color:var(--ink-3);text-align:right;padding:4px 8px;border-right:1px solid var(--line);height:52px;font-variant-numeric:tabular-nums}
+.wk-c{border-left:1px solid var(--line);border-bottom:1px dashed var(--line);height:52px;position:relative;padding:3px}
+.wk-c.closed{background:repeating-linear-gradient(135deg,var(--canvas) 0 6px,#fff 6px 12px)}
+.ev{border-radius:7px;padding:4px 7px;font-size:12.5px;line-height:1.25;border-left:3px solid currentColor;height:calc(100% - 0px);overflow:hidden;cursor:pointer}
+.ev b{display:block;color:var(--ink);font-size:13px}
+.ev.b-pend{color:var(--warn)}.ev.b-conf{color:var(--purple)}.ev.b-aten{color:var(--ok)}.ev.b-canc{color:var(--mute);text-decoration:line-through}.ev.b-repr{color:var(--info)}
+.ev::before{display:none}
+
+.sched{display:grid;grid-template-columns:1.6fr 1fr;gap:20px;align-items:start}
+.day-row{display:grid;grid-template-columns:130px 70px 1fr 1fr;gap:14px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--line)}
+.day-row:last-child{border-bottom:0}
+.day-row b{font-size:15.5px}
+.day-row select{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff}
+.day-row select:disabled{opacity:.45}
+.day-row .closed-t{color:var(--ink-3);grid-column:3/5;font-size:14.5px}
+.sw{position:relative;width:44px;height:26px;border-radius:999px;background:var(--line);border:0;padding:0;transition:background .15s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .15s}
+.sw[aria-checked="true"]{background:var(--purple)}
+.sw[aria-checked="true"]::after{transform:translateX(18px)}
+.sw:disabled{opacity:.5;cursor:not-allowed}
+.kv{display:grid;gap:16px}
+.off-list{list-style:none;padding:0;margin:0}
+.off-list li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.off-list li:last-child{border-bottom:0}
+.off-list li span{margin-left:auto;color:var(--ink-3);font-size:14px}
+.readonly-note{display:flex;gap:10px;align-items:center;background:var(--info-bg);color:var(--info);border-radius:10px;padding:10px 14px;margin-bottom:18px;font-size:14.5px}
+
+.owners{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start}
+.olist{list-style:none;margin:0;padding:6px}
+.olist button{width:100%;text-align:left;display:flex;gap:12px;align-items:center;padding:12px;border-radius:10px;border:0;background:transparent}
+.olist button:hover{background:var(--canvas)}
+.olist button.on{background:var(--lav)}
+.olist small{display:block;color:var(--ink-2);font-size:13.5px}
+.empty{text-align:center;padding:40px 24px;color:var(--ink-2)}
+.empty .ic{width:36px;height:36px;color:var(--ink-3);margin-bottom:10px}
+.empty h3{font-size:17px;margin-bottom:6px}
+.odetail-h{display:flex;gap:16px;align-items:center;padding:22px 24px;border-bottom:1px solid var(--line)}
+.odetail-h .avatar{width:56px;height:56px;font-size:20px}
+.odetail-h h2{font-size:22px}
+.odetail-h .sp{margin-left:auto}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:20px 24px;border-bottom:1px solid var(--line)}
+.facts b{display:block;font-size:13.5px;color:var(--ink-3);font-weight:600}
+.pets{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:20px 24px}
+.pet{border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:start}
+.pet-ic{width:44px;height:44px;border-radius:50%;background:var(--lav);color:var(--purple);display:grid;place-items:center}
+.pet h4{font-size:17px}
+.pet dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:8px 0 0;font-size:14px}
+.pet dt{color:var(--ink-3)}.pet dd{margin:0}
+.sub-h{padding:0 24px;font-size:15px;font-weight:800;font-family:var(--f-head);margin-top:6px}
+
+.inbox{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+.ilist{list-style:none;margin:0;padding:6px}
+.ilist button{width:100%;text-align:left;border:0;background:transparent;border-radius:10px;padding:14px;display:block}
+.ilist button:hover{background:var(--canvas)}
+.ilist button.on{background:var(--lav)}
+.ilist .r1{display:flex;gap:8px;align-items:center}
+.ilist .r1 small{margin-left:auto;color:var(--ink-3);font-size:13px}
+.ilist p{font-size:14px;color:var(--ink-2);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.convo{padding:20px 24px;background:var(--canvas);display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto}
+.ireq{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:18px 24px;border-bottom:1px solid var(--line)}
+.ireq b{display:block;font-size:13px;color:var(--ink-3);font-weight:600}
+.iacts{display:flex;gap:10px;padding:16px 24px;border-top:1px solid var(--line);flex-wrap:wrap}
+
+.perm{width:100%;border-collapse:collapse;font-size:14.5px}
+.perm th,.perm td{padding:10px 14px;border-bottom:1px solid var(--line);text-align:center}
+.perm th:first-child,.perm td:first-child{text-align:left}
+.perm .ic{width:18px;height:18px}
+.yes{color:var(--ok)}.no{color:var(--ink-3)}
+
+.cms{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.cms-row{display:flex;gap:14px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--line)}
+.cms-row:last-child{border-bottom:0}
+.cms-row .grow{flex:1}
+.cms-row small{display:block;color:var(--ink-2);font-size:13.5px}
+.faq{padding:14px 20px;border-bottom:1px solid var(--line)}
+.faq:last-child{border-bottom:0}
+.faq b{display:block;font-size:15px}
+.faq p{font-size:14.5px;color:var(--ink-2);margin-top:3px}
+
+/* ---------- modal / toast ---------- */
+.scrim{position:fixed;inset:0;background:rgba(43,31,54,.45);z-index:60;display:none;align-items:center;justify-content:center;padding:24px}
+.scrim.on{display:flex}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:560px;max-height:calc(100vh - 48px);overflow:auto;box-shadow:0 30px 80px rgba(43,31,54,.35)}
+.modal-h{display:flex;align-items:center;padding:20px 24px;border-bottom:1px solid var(--line)}
+.modal-h h2{font-size:20px;font-weight:800}
+.modal-h .btn-icon{margin-left:auto;border:0}
+.modal-b{padding:22px 24px}
+.modal-f{display:flex;gap:10px;justify-content:flex-end;padding:16px 24px;border-top:1px solid var(--line);background:var(--canvas)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.slot{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:8px 0;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.slot:hover{border-color:var(--purple)}
+.slot.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.slot.busy{color:var(--ink-3);background:var(--mute-bg);text-decoration:line-through}
+.mini-ctx{background:var(--lav);border-radius:12px;padding:12px 14px;margin-bottom:18px;font-size:14.5px}
+.mini-ctx b{font-size:15.5px}
+.toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;display:flex;gap:10px;align-items:center;z-index:80;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;font-size:15px}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast .ic{color:#9BE3B9}
+
+/* ---------- navegador del prototipo ---------- */
+.pnav{position:fixed;left:16px;bottom:16px;z-index:90;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);font-size:13.5px;width:250px;font-family:var(--f-body)}
+.pnav-h{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700}
+.pnav-h button{margin-left:auto;background:none;border:0;color:var(--ink-3);font-size:13px;text-decoration:underline}
+.pnav-b{padding:10px 12px;display:grid;gap:8px}
+.pnav select{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff}
+.pnav label{display:flex;align-items:center;gap:8px;cursor:pointer}
+.pnav.min .pnav-b{display:none}
+.pnav.gone{display:none}
+
+/* ---------- responsive ---------- */
+@media (max-width:960px){
+  .wrap{padding:0 20px}
+  .site-nav{display:none}
+  .site-head .brand-name{font-size:17px}
+  .search{min-width:0;flex:1}
+  .site-head .btn{margin-left:auto}
+  .hero .wrap,.sec-head,.about,.visit-grid,.svc-groups,.steps{grid-template-columns:1fr}
+  .hero .wrap{padding-top:44px;gap:24px}
+  .hero-copy{padding-bottom:8px}
+  .arch{max-width:420px;margin:0 auto;width:100%}
+  .pulse{display:none}
+  .sec{padding:64px 0}
+  .login{grid-template-columns:1fr}
+  .login-art{display:none}
+  #s-admin.on{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;gap:4px;padding:12px}
+  .side .brand,.side-label,.side-foot{display:none}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .dash,.sched,.owners,.inbox,.cms{grid-template-columns:1fr}
+  .view{padding:20px 16px}
+  .top{padding:0 16px}
+  .top .date{display:none}
+  .chat{right:12px;left:12px;width:auto;bottom:12px}
+  .table-wrap{overflow-x:auto}
+  .pnav{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ======================= SITIO INFORMATIVO ======================= -->
+<div class="screen" data-screen="sitio" id="s-sitio">
+  <header class="site-head">
+    <div class="wrap">
+      <a class="brand" href="#/sitio" aria-label="Vida Animal II, inicio">
+        <svg class="brand-mark" data-logo viewBox="0 0 48 48" aria-hidden="true"></svg>
+        <span class="brand-text"><span class="brand-name">VIDA ANIMAL II</span><span class="brand-sub">clínica veterinaria</span></span>
+      </a>
+      <nav class="site-nav" aria-label="Secciones">
+        <a href="#servicios" data-scroll>Servicios</a>
+        <a href="#como-agendar" data-scroll>Cómo agendar</a>
+        <a href="#nosotros" data-scroll>Nosotros</a>
+        <a href="#visitanos" data-scroll>Ubicación y contacto</a>
+      </nav>
+      <button class="btn btn-primary" data-open-chat="cita"><svg class="ic"><use href="#i-cal"/></svg>Agendar cita</button>
+    </div>
+  </header>
+
+  <section class="hero" id="inicio">
+    <svg class="pulse" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60 H520 l18 -34 l22 58 l20 -76 l18 52 H1440"/></svg>
+    <div class="wrap">
+      <div class="hero-copy">
+        <h1>Cuidamos a tu mascota en Plaza del Sol</h1>
+        <p class="hero-lead">Consultas, vacunas, cirugías, estética y hospedaje en un mismo lugar. Agenda tu cita en minutos con nuestro asistente, sin esperar respuesta por mensaje.</p>
+        <div class="hero-cta">
+          <button class="btn btn-primary" data-open-chat="cita"><svg class="ic"><use href="#i-chat"/></svg>Agendar con el asistente</button>
+          <a class="btn btn-ghost" href="#servicios" data-scroll>Ver servicios</a>
+        </div>
+        <div class="hero-meta">
+          <div><svg class="ic"><use href="#i-pin"/></svg>Plaza del Sol, Ciudad Juárez</div>
+          <div><svg class="ic"><use href="#i-clock"/></svg><span data-bind="horario-corto">Lun a sáb desde las 9:00</span></div>
+        </div>
+      </div>
+      <div class="arch ph" data-ph="Fotografía de mascotas">
+        <img alt="Gatito y cachorro asomados" src="data:image/jpeg;base64,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">
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="servicios">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Todo lo que tu mascota necesita, en una sola visita</h2>
+        <p>Nuestro equipo de médicos veterinarios atiende desde la consulta de rutina hasta la hospitalización. Si no sabes qué servicio elegir, el asistente te orienta.</p>
+      </div>
+      <div class="svc-groups" id="svc-groups"></div>
+    </div>
+  </section>
+
+  <section class="sec steps-sec" id="como-agendar">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Agenda tu cita en tres pasos</h2>
+        <p>El asistente está disponible a cualquier hora. Tu solicitud llega directo a la agenda de la clínica y te confirmamos por WhatsApp.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><h3>Abre el asistente</h3><p>Toca «Agendar cita» y dinos qué servicio necesitas. También puedes resolver dudas frecuentes.</p></div>
+        <div class="step"><h3>Elige día y horario</h3><p>Solo verás los horarios que siguen libres, así no hay cruces con otras citas.</p></div>
+        <div class="step"><h3>Recibe la confirmación</h3><p>Deja tu nombre, el de tu mascota y un teléfono. El personal confirma tu cita por WhatsApp.</p></div>
+      </div>
+      <button class="btn btn-primary" data-open-chat="cita"><svg class="ic"><use href="#i-chat"/></svg>Empezar ahora</button>
+    </div>
+  </section>
+
+  <section class="sec" id="nosotros">
+    <div class="wrap about">
+      <div>
+        <h2>Una clínica de barrio con atención de especialidad</h2>
+        <p class="about-q">«Brindamos servicios integrales para el cuidado y bienestar de las mascotas, con atención responsable, profesional y comprometida con la tranquilidad de sus familias.»</p>
+        <p style="color:var(--ink-2);margin-top:20px;max-width:52ch">Vida Animal II es la segunda sucursal de Vida Animal. Abrimos en Plaza del Sol para atender a más familias de Ciudad Juárez con el mismo equipo de médicos veterinarios.</p>
+      </div>
+      <div class="values">
+        <div class="value"><svg class="ic"><use href="#i-heart"/></svg><div><h4>Confianza</h4><p>Te explicamos cada diagnóstico y tratamiento antes de empezar.</p></div></div>
+        <div class="value"><svg class="ic"><use href="#i-shield"/></svg><div><h4>Trato responsable</h4><p>Seguimos protocolos claros en consulta, cirugía y hospitalización.</p></div></div>
+        <div class="value"><svg class="ic"><use href="#i-paw"/></svg><div><h4>Atención personalizada</h4><p>Cuatro médicos veterinarios que conocen a cada paciente por su nombre.</p></div></div>
+        <div class="value"><svg class="ic"><use href="#i-pulse"/></svg><div><h4>Mejora continua</h4><p>Actualizamos nuestros procesos para que agendar sea cada vez más fácil.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec visit" id="visitanos">
+    <div class="wrap">
+      <div class="sec-head"><h2>Visítanos en Plaza del Sol</h2><p>Estamos dentro de la plaza, con estacionamiento. Si tu mascota necesita atención urgente, escríbenos antes de llegar.</p></div>
+      <div class="visit-grid">
+        <div class="map ph" data-ph="Mapa de ubicación">
+          <svg viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice" aria-label="Mapa ilustrativo de Plaza del Sol">
+            <rect width="640" height="400" fill="#EFE6F6"/>
+            <g stroke="#fff" stroke-width="18" fill="none"><path d="M-10 120 H660"/><path d="M-10 300 H660"/><path d="M160 -10 V410"/><path d="M470 -10 V410"/></g>
+            <g stroke="#fff" stroke-width="8" fill="none" opacity=".8"><path d="M-10 210 H660"/><path d="M320 -10 V410"/></g>
+            <rect x="180" y="140" width="270" height="140" rx="12" fill="#E2D3EE"/>
+            <text x="315" y="268" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="14" font-weight="600" fill="#6B4391">Plaza del Sol</text>
+            <g transform="translate(315 196)"><circle r="34" fill="#9A2456" opacity=".15"/><path d="M0 18c-10-11-16-19-16-27a16 16 0 0 1 32 0c0 8-6 16-16 27z" fill="#9A2456"/><circle cy="-9" r="6" fill="#fff"/></g>
+          </svg>
+        </div>
+        <div class="contact">
+          <div class="contact-row"><svg class="ic"><use href="#i-pin"/></svg><div><b>Dirección</b><span data-bind="dir">Plaza del Sol, Ciudad Juárez, Chih.</span></div></div>
+          <div class="contact-row"><svg class="ic"><use href="#i-phone"/></svg><div><b>Teléfono y WhatsApp</b><span data-bind="tel">656 000 0000</span></div></div>
+          <div class="contact-row"><svg class="ic"><use href="#i-clock"/></svg><div><b>Horario</b><table class="hours" id="site-hours"></table></div></div>
+          <div class="btns">
+            <button class="btn btn-wa" data-toast="Abriría WhatsApp con la clínica"><svg class="ic"><use href="#i-wa"/></svg>Escribir por WhatsApp</button>
+            <button class="btn btn-ghost" data-toast="Abriría la ruta en Google Maps"><svg class="ic"><use href="#i-pin"/></svg>Cómo llegar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <a class="brand" href="#/sitio"><svg class="brand-mark" data-logo viewBox="0 0 48 48" aria-hidden="true"></svg><span class="brand-text"><span class="brand-name">VIDA ANIMAL II</span><span class="brand-sub">clínica veterinaria</span></span></a>
+      <div class="foot-links">
+        <a href="#servicios" data-scroll>Servicios</a>
+        <a href="#visitanos" data-scroll>Contacto</a>
+        <button data-open-chat="faq">Preguntas frecuentes</button>
+        <a href="#/login">Acceso del personal</a>
+      </div>
+      <p class="foot-note">Prototipo académico. Ingeniería de Software, UACJ 2026. Teléfono y horarios son datos de ejemplo.</p>
+    </div>
+  </footer>
+
+  <button class="chat-fab" data-open-chat="hola" id="chat-fab"><svg class="ic"><use href="#i-chat"/></svg>¿Te ayudamos?</button>
+  <aside class="chat" id="chat" aria-label="Asistente de citas">
+    <div class="chat-head">
+      <div class="chat-av"><svg data-logo viewBox="0 0 48 48" aria-hidden="true"></svg></div>
+      <div><h3>Asistente Vida Animal</h3><small>En línea</small></div>
+      <button class="chat-x" id="chat-x" aria-label="Cerrar chat"><svg class="ic"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="chat-body" id="chat-body" aria-live="polite"></div>
+    <form class="chat-foot" id="chat-form">
+      <label for="chat-in" class="sr">Escribe un mensaje</label>
+      <input id="chat-in" autocomplete="off" placeholder="Escribe tu mensaje…">
+      <button class="chat-send" aria-label="Enviar"><svg class="ic"><use href="#i-send"/></svg></button>
+    </form>
+  </aside>
+</div>
+
+<!-- ======================= LOGIN ======================= -->
+<div class="screen" data-screen="login" id="s-login">
+  <div class="login">
+    <div class="login-art">
+      <a class="brand" href="#/sitio"><svg class="brand-mark" data-logo viewBox="0 0 48 48" aria-hidden="true"></svg><span class="brand-text"><span class="brand-name">VIDA ANIMAL II</span><span class="brand-sub">clínica veterinaria</span></span></a>
+      <svg class="pulse" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60 H600 l30 -34 l36 58 l32 -76 l30 52 H1440"/></svg>
+      <h2>La agenda de la clínica, en un solo lugar</h2>
+      <p>Consulta las citas del día, atiende las solicitudes del asistente y mantén los horarios al corriente.</p>
+    </div>
+    <div class="login-form">
+      <form id="login-form" novalidate>
+        <a class="back" href="#/sitio"><svg class="ic"><use href="#i-left"/></svg>Volver al sitio</a>
+        <h1>Inicia sesión</h1>
+        <p class="sub">Acceso exclusivo para el personal de Vida Animal II.</p>
+        <div class="alert" id="login-err" role="alert"><svg class="ic"><use href="#i-alert"/></svg><span></span></div>
+        <div class="field"><label for="lg-user">Usuario</label><input id="lg-user" autocomplete="username" placeholder="Ej. lrios"></div>
+        <div class="field"><label for="lg-pass">Contraseña</label><input id="lg-pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+        <button class="btn btn-purple" style="width:100%;padding:14px">Entrar al panel</button>
+        <div class="demo"><b>Accesos de prueba del prototipo</b> (contraseña: demo)
+          <div class="chips">
+            <button type="button" class="chip" data-demo="admin">Administrador</button>
+            <button type="button" class="chip" data-demo="lrios">Personal operativo</button>
+            <button type="button" class="chip" data-demo="esilva">Cuenta inactiva</button>
+            <button type="button" class="chip" data-demo="mal">Datos incorrectos</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= PANEL ADMINISTRATIVO ======================= -->
+<div class="screen admin" data-screen="admin" id="s-admin">
+  <aside class="side">
+    <a class="brand" href="#/admin/inicio"><svg class="brand-mark" data-logo viewBox="0 0 48 48" aria-hidden="true"></svg><span class="brand-text"><span class="brand-name">VIDA ANIMAL II</span><span class="brand-sub">panel de la clínica</span></span></a>
+    <div class="side-label">Operación diaria</div>
+    <a class="nav-item" href="#/admin/inicio" data-nav="inicio"><svg class="ic"><use href="#i-home"/></svg>Inicio</a>
+    <a class="nav-item" href="#/admin/citas" data-nav="citas"><svg class="ic"><use href="#i-cal"/></svg>Citas</a>
+    <a class="nav-item" href="#/admin/solicitudes" data-nav="solicitudes"><svg class="ic"><use href="#i-chat"/></svg>Solicitudes del chat<span class="count" id="nav-count">3</span></a>
+    <a class="nav-item" href="#/admin/propietarios" data-nav="propietarios"><svg class="ic"><use href="#i-paw"/></svg>Propietarios y mascotas</a>
+    <div class="side-label">Configuración</div>
+    <a class="nav-item" href="#/admin/horarios" data-nav="horarios"><svg class="ic"><use href="#i-clock"/></svg>Horarios y disponibilidad</a>
+    <a class="nav-item" href="#/admin/contenido" data-nav="contenido" data-role="admin"><svg class="ic"><use href="#i-globe"/></svg>Contenido del sitio</a>
+    <a class="nav-item" href="#/admin/usuarios" data-nav="usuarios" data-role="admin"><svg class="ic"><use href="#i-users"/></svg>Usuarios y roles</a>
+    <div class="side-foot">
+      <a class="nav-item" href="#/sitio"><svg class="ic"><use href="#i-globe"/></svg>Ver sitio público</a>
+      <a class="nav-item" href="#/login" id="logout"><svg class="ic"><use href="#i-out"/></svg>Cerrar sesión</a>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <h1 id="v-title">Inicio</h1><span class="date">Jueves 22 de octubre de 2026</span>
+      <div class="me"><div class="avatar" id="me-av">AD</div><div><b id="me-name">Administración</b><span class="role admin" id="me-role">Administrador</span></div></div>
+    </header>
+
+    <!-- INICIO -->
+    <section class="view" data-view="inicio">
+      <div class="kpis">
+        <a class="kpi" href="#/admin/citas" style="text-decoration:none;color:inherit"><span class="kpi-ic"><svg class="ic"><use href="#i-cal"/></svg></span><div><b id="k-hoy">9</b><span>Citas hoy</span></div></a>
+        <a class="kpi warn-k" href="#/admin/citas" style="text-decoration:none;color:inherit"><span class="kpi-ic"><svg class="ic"><use href="#i-clock"/></svg></span><div><b id="k-pend">3</b><span>Por confirmar</span></div></a>
+        <a class="kpi" href="#/admin/solicitudes" style="text-decoration:none;color:inherit"><span class="kpi-ic"><svg class="ic"><use href="#i-chat"/></svg></span><div><b id="k-sol">2</b><span>Citas pedidas por chat</span></div></a>
+        <a class="kpi alert-k" href="#/admin/solicitudes" style="text-decoration:none;color:inherit"><span class="kpi-ic"><svg class="ic"><use href="#i-alert"/></svg></span><div><b id="k-can">2</b><span>Requieren atención</span></div></a>
+      </div>
+      <div class="dash">
+        <div class="panel">
+          <div class="panel-h"><h2>Agenda de hoy</h2><div class="sp"><a class="btn btn-ghost btn-sm" href="#/admin/citas">Ver todas las citas</a></div></div>
+          <ul class="tl" id="tl-hoy"></ul>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2>Requieren atención</h2></div>
+          <ul class="attn" id="attn"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- CITAS -->
+    <section class="view" data-view="citas">
+      <div class="toolbar">
+        <div class="seg" role="tablist" aria-label="Vista">
+          <button class="on" data-cv="lista"><svg class="ic"><use href="#i-list"/></svg>Lista</button>
+          <button data-cv="semana"><svg class="ic"><use href="#i-grid"/></svg>Semana</button>
+        </div>
+        <div class="datenav" id="dnav">
+          <button class="btn-icon" data-dn="-1" aria-label="Día anterior"><svg class="ic"><use href="#i-left"/></svg></button>
+          <span id="dn-label">Jueves 22 de octubre</span>
+          <button class="btn-icon" data-dn="1" aria-label="Día siguiente"><svg class="ic"><use href="#i-right"/></svg></button>
+        </div>
+        <div class="seg" id="st-filter">
+          <button class="on" data-st="todas">Todas</button><button data-st="Pendiente">Pendientes</button><button data-st="Confirmada">Confirmadas</button><button data-st="Cancelada">Canceladas</button>
+        </div>
+        <div class="tb-r"><button class="btn btn-purple" id="new-appt"><svg class="ic"><use href="#i-plus"/></svg>Nueva cita</button></div>
+      </div>
+      <div id="cv-lista" class="panel table-wrap">
+        <table class="t"><thead><tr><th>Hora</th><th>Mascota</th><th>Servicio</th><th>Propietario</th><th>Origen</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead><tbody id="appt-body"></tbody></table>
+      </div>
+      <div id="cv-semana" style="display:none"><div class="week" id="week"></div></div>
+    </section>
+
+    <!-- SOLICITUDES -->
+    <section class="view" data-view="solicitudes">
+      <div class="toolbar">
+        <div class="seg" id="sol-filter"><button class="on" data-sf="abiertas">Abiertas</button><button data-sf="todas">Todas</button></div>
+        <p style="color:var(--ink-2);font-size:14.5px">Conversaciones del asistente que necesitan acción del personal.</p>
+      </div>
+      <div class="inbox">
+        <div class="panel"><ul class="ilist" id="ilist"></ul></div>
+        <div class="panel" id="idetail"></div>
+      </div>
+    </section>
+
+    <!-- PROPIETARIOS -->
+    <section class="view" data-view="propietarios">
+      <div class="toolbar">
+        <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="o-search" placeholder="Buscar por propietario, mascota o teléfono"></label>
+        <div class="tb-r"><button class="btn btn-purple" id="new-owner"><svg class="ic"><use href="#i-plus"/></svg>Registrar propietario</button></div>
+      </div>
+      <div class="owners">
+        <div class="panel"><ul class="olist" id="olist"></ul></div>
+        <div class="panel" id="odetail"></div>
+      </div>
+    </section>
+
+    <!-- HORARIOS -->
+    <section class="view" data-view="horarios">
+      <div class="readonly-note" id="ro-note" style="display:none"><svg class="ic"><use href="#i-shield"/></svg>Solo el administrador puede cambiar horarios. Puedes consultarlos.</div>
+      <div class="sched">
+        <div class="panel">
+          <div class="panel-h"><h2>Horario de atención</h2><div class="sp"><span style="color:var(--ink-3);font-size:14px">Se muestra en el sitio y define los horarios del asistente</span></div></div>
+          <div id="days"></div>
+        </div>
+        <div style="display:grid;gap:20px">
+          <div class="panel">
+            <div class="panel-h"><h2>Reglas de agenda</h2></div>
+            <div class="panel-b kv">
+              <div class="field" style="margin:0"><label for="h-dur">Duración de cada espacio</label><select id="h-dur" data-adm><option>20 minutos</option><option selected>30 minutos</option><option>45 minutos</option><option>60 minutos</option></select></div>
+              <div class="field" style="margin:0"><label for="h-cap">Citas al mismo tiempo</label><select id="h-cap" data-adm><option>1</option><option selected>2</option><option>3</option><option>4</option></select><span class="hint">Al llegar al límite, el horario deja de mostrarse en el asistente.</span></div>
+              <div class="field" style="margin:0"><label for="h-adv">Anticipación mínima para agendar</label><select id="h-adv" data-adm><option>Sin mínimo</option><option selected>2 horas</option><option>1 día</option></select></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h2>Días sin servicio</h2><div class="sp"><button class="btn btn-ghost btn-sm" data-adm id="add-off"><svg class="ic"><use href="#i-plus"/></svg>Agregar</button></div></div>
+            <div class="panel-b" style="padding-top:6px;padding-bottom:6px"><ul class="off-list" id="off-list"></ul></div>
+          </div>
+          <button class="btn btn-purple" data-adm id="save-h" style="justify-self:end"><svg class="ic"><use href="#i-check"/></svg>Guardar horarios</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTENIDO -->
+    <section class="view" data-view="contenido">
+      <div class="cms">
+        <div class="panel">
+          <div class="panel-h"><h2>Servicios publicados</h2><div class="sp"><a class="btn btn-ghost btn-sm" href="#/sitio">Ver en el sitio</a></div></div>
+          <div id="cms-svc"></div>
+        </div>
+        <div style="display:grid;gap:20px">
+          <div class="panel">
+            <div class="panel-h"><h2>Datos de contacto</h2></div>
+            <div class="panel-b">
+              <div class="field"><label for="c-tel">Teléfono y WhatsApp</label><input id="c-tel" value="656 000 0000"></div>
+              <div class="field"><label for="c-dir">Dirección</label><input id="c-dir" value="Plaza del Sol, Ciudad Juárez, Chih."></div>
+              <button class="btn btn-purple btn-sm" id="save-c"><svg class="ic"><use href="#i-check"/></svg>Guardar contacto</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h2>Preguntas frecuentes del asistente</h2><div class="sp"><button class="btn btn-ghost btn-sm" data-toast="Abriría el formulario para una nueva pregunta"><svg class="ic"><use href="#i-plus"/></svg>Agregar</button></div></div>
+            <div id="cms-faq"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- USUARIOS -->
+    <section class="view" data-view="usuarios">
+      <div class="toolbar"><div class="tb-r"><button class="btn btn-purple" id="new-user"><svg class="ic"><use href="#i-plus"/></svg>Agregar usuario</button></div></div>
+      <div class="panel table-wrap" style="margin-bottom:20px">
+        <table class="t"><thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Último acceso</th><th>Acceso activo</th><th></th></tr></thead><tbody id="users-body"></tbody></table>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h2>Permisos por rol</h2></div>
+        <div class="table-wrap"><table class="perm" id="perm"></table></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- modal + toast -->
+<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title" id="modal"></div></div>
+<div class="toast" id="toast" role="status"><svg class="ic"><use href="#i-check"/></svg><span></span></div>
+
+<!-- navegador del prototipo (ocultar antes de importar a Figma) -->
+<div class="pnav" id="pnav">
+  <div class="pnav-h">Prototipo<button id="pn-min">minimizar</button><button id="pn-hide" style="margin-left:6px">ocultar</button></div>
+  <div class="pnav-b">
+    <select id="pn-go" aria-label="Ir a pantalla">
+      <option value="#/sitio">Sitio informativo</option>
+      <option value="#/login">Inicio de sesión</option>
+      <option value="#/admin/inicio">Panel: Inicio</option>
+      <option value="#/admin/citas">Panel: Citas</option>
+      <option value="#/admin/solicitudes">Panel: Solicitudes del chat</option>
+      <option value="#/admin/propietarios">Panel: Propietarios y mascotas</option>
+      <option value="#/admin/horarios">Panel: Horarios</option>
+      <option value="#/admin/contenido">Panel: Contenido del sitio</option>
+      <option value="#/admin/usuarios">Panel: Usuarios y roles</option>
+    </select>
+    <label><input type="checkbox" id="pn-wf"> Ver como wireframe</label>
+    <label><input type="checkbox" id="pn-op"> Ver panel como personal operativo</label>
+  </div>
+</div>
+
+<!-- iconos -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-paw" viewBox="0 0 24 24"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.05Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M9 10c.5 2 2.5 4 5 5"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-steth" viewBox="0 0 24 24"><path d="M5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 12 0V4a2 2 0 0 0-2-2h-1"/><path d="M8 15v1a6 6 0 0 0 12 0v-4"/><circle cx="20" cy="10" r="2"/></symbol>
+  <symbol id="i-syr" viewBox="0 0 24 24"><path d="m18 2 4 4M17 7l3-3M19 9 8.7 19.3a2.4 2.4 0 0 1-3.4 0l-.6-.6a2.4 2.4 0 0 1 0-3.4L15 5M9 11l4 4M5 19l-3 3M14 4l6 6"/></symbol>
+  <symbol id="i-scis" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+  <symbol id="i-bed" viewBox="0 0 24 24"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></symbol>
+  <symbol id="i-pill" viewBox="0 0 24 24"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7ZM8.5 8.5l7 7"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/></symbol>
+  <symbol id="i-feather" viewBox="0 0 24 24"><path d="M20.2 12.2a6 6 0 0 0-8.5-8.5L5 10.5V19h8.5z"/><path d="M16 8 2 22M17.5 15H9"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></symbol>
+  <symbol id="i-house" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M12 17c-2-1.6-3.2-2.6-3.2-3.8a1.6 1.6 0 0 1 3.2-.4 1.6 1.6 0 0 1 3.2.4c0 1.2-1.2 2.2-3.2 3.8z"/></symbol>
+  <symbol id="i-bird" viewBox="0 0 24 24"><path d="M16 7h.01M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20"/><path d="m20 7 2 .5-2 .5M10 18v3M14 17.75V21M7 18a6 6 0 0 0 3.84-10.61"/></symbol>
+</svg>
+
+<script>
+/* ===================== DATOS DE EJEMPLO ===================== */
+const LOGO = `<path fill="var(--purple)" d="M17 4h14a2 2 0 0 1 2 2v9h9a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-9v9a2 2 0 0 1-2 2H17a2 2 0 0 1-2-2v-9H6a2 2 0 0 1-2-2V17a2 2 0 0 1 2-2h9V6a2 2 0 0 1 2-2z"/>
+<path fill="#fff" d="M24 35.5c-7-5.6-10.5-9-10.5-12.6a5.4 5.4 0 0 1 10.5-1.8 5.4 5.4 0 0 1 10.5 1.8c0 3.6-3.5 7-10.5 12.6z"/>
+<g fill="var(--wine)"><ellipse cx="24" cy="27.6" rx="3.6" ry="3"/><circle cx="19.6" cy="23.6" r="1.5"/><circle cx="22.4" cy="21.4" r="1.5"/><circle cx="25.6" cy="21.4" r="1.5"/><circle cx="28.4" cy="23.6" r="1.5"/></g>`;
+
+const SERVICES = [
+  {g:'Salud', id:'consulta', n:'Consulta general', d:'Revisión completa, diagnóstico y tratamiento para perros, gatos y otras especies.', ic:'i-steth', on:true},
+  {g:'Salud', id:'vacuna', n:'Vacunación y medicina preventiva', d:'Esquemas de vacunas, desparasitación y control de cachorros y adultos.', ic:'i-syr', on:true},
+  {g:'Salud', id:'cirugia', n:'Cirugías y procedimientos', d:'Esterilizaciones y procedimientos clínicos, con valoración previa.', ic:'i-pulse', on:true},
+  {g:'Salud', id:'estudios', n:'Estudios complementarios', d:'Apoyo diagnóstico para confirmar lo que observamos en consulta.', ic:'i-flask', on:true},
+  {g:'Cuidado y estancia', id:'estetica', n:'Estética', d:'Baño, corte de pelo y uñas, limpieza de oídos.', ic:'i-scis', on:true},
+  {g:'Cuidado y estancia', id:'hosp', n:'Hospitalización', d:'Seguimiento médico de pacientes que necesitan quedarse en observación.', ic:'i-bed', on:true},
+  {g:'Cuidado y estancia', id:'hospedaje', n:'Hospedaje', d:'Tu mascota se queda con nosotros mientras viajas, bajo vigilancia veterinaria.', ic:'i-house', on:true},
+  {g:'Tienda y acompañamiento', id:'tienda', n:'Medicamentos y productos', d:'Alimento, medicamentos y accesorios recomendados por nuestros médicos.', ic:'i-pill', on:true},
+  {g:'Tienda y acompañamiento', id:'cremacion', n:'Cremación', d:'Acompañamiento respetuoso para despedir a tu compañero.', ic:'i-feather', on:true},
+];
+const FAQ = [
+  {q:'¿Necesito cita para estética?', a:'Sí. Los baños y cortes se agendan para asegurar un espacio de una hora. Puedes agendar desde aquí.'},
+  {q:'¿Atienden urgencias?', a:'Si tu mascota tiene una urgencia, escríbenos por WhatsApp antes de llegar para preparar su atención.'},
+  {q:'¿Qué especies atienden?', a:'Perros y gatos, y también conejos, aves y otras especies pequeñas. Pregúntanos por la tuya.'},
+  {q:'¿Cuánto cuesta una consulta?', a:'El costo depende del servicio y del peso de tu mascota. El personal te informa al confirmar tu cita.'},
+];
+const DAYS = [
+  {d:'Lunes',on:true,a:'9:00',c:'19:00'},{d:'Martes',on:true,a:'9:00',c:'19:00'},{d:'Miércoles',on:true,a:'9:00',c:'19:00'},
+  {d:'Jueves',on:true,a:'9:00',c:'19:00'},{d:'Viernes',on:true,a:'9:00',c:'19:00'},{d:'Sábado',on:true,a:'9:00',c:'15:00'},{d:'Domingo',on:false,a:'',c:''}];
+const OFF = [{f:'2 de noviembre de 2026',m:'Día de Muertos'},{f:'16 de noviembre de 2026',m:'Día de la Revolución'},{f:'25 de diciembre de 2026',m:'Navidad'}];
+
+const OWNERS = [
+  {id:1,n:'Sofía Hernández',tel:'656 214 7790',mail:'sofia.hdz@correo.com',desde:'Marzo 2025',pets:[{n:'Max',e:'Perro',r:'Labrador',ed:'4 años',s:'Macho',p:'31 kg'},{n:'Nala',e:'Perro',r:'Golden retriever',ed:'2 años',s:'Hembra',p:'26 kg'}]},
+  {id:2,n:'Carlos Ramírez',tel:'656 381 0042',mail:'c.ramirez@correo.com',desde:'Junio 2025',pets:[{n:'Luna',e:'Gato',r:'Mestizo',ed:'1 año',s:'Hembra',p:'3.8 kg'}]},
+  {id:3,n:'Mariana Torres',tel:'656 109 5521',mail:'mariana.t@correo.com',desde:'Enero 2026',pets:[{n:'Coco',e:'Perro',r:'Poodle',ed:'6 años',s:'Macho',p:'7 kg'}]},
+  {id:4,n:'Jorge Medina',tel:'656 447 3318',mail:'—',desde:'Agosto 2026',pets:[{n:'Kiwi',e:'Ave',r:'Periquito australiano',ed:'2 años',s:'Macho',p:'38 g'}]},
+  {id:5,n:'Ana Lucía Pérez',tel:'656 290 6614',mail:'analu.perez@correo.com',desde:'Octubre 2026',pets:[{n:'Rocky',e:'Perro',r:'Pitbull',ed:'3 años',s:'Macho',p:'24 kg'}]},
+  {id:6,n:'Fernanda Ruiz',tel:'656 532 8807',mail:'fer.ruiz@correo.com',desde:'Febrero 2026',pets:[{n:'Mishi',e:'Gato',r:'Siamés',ed:'5 meses',s:'Hembra',p:'1.9 kg'}]},
+  {id:7,n:'Ricardo Gómez',tel:'656 118 2290',mail:'rgomez@correo.com',desde:'Noviembre 2025',pets:[{n:'Toby',e:'Perro',r:'Chihuahua',ed:'8 años',s:'Macho',p:'2.6 kg'}]},
+  {id:8,n:'Daniela Castro',tel:'656 675 4013',mail:'dani.castro@correo.com',desde:'Abril 2026',pets:[{n:'Pelusa',e:'Conejo',r:'Belier',ed:'1 año',s:'Hembra',p:'1.6 kg'}]},
+];
+// fecha base: jueves 22 oct 2026 (índice de día 3 = jueves en semana lun-sáb)
+const WEEK = [{d:'Lun',n:19},{d:'Mar',n:20},{d:'Mié',n:21},{d:'Jue',n:22},{d:'Vie',n:23},{d:'Sáb',n:24}];
+const DAYNAMES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+let APPTS = [
+  {id:1,day:3,h:'9:00',pet:'Max',e:'Perro',svc:'Consulta general',o:1,src:'Chat',st:'Atendida',dur:1},
+  {id:2,day:3,h:'9:30',pet:'Luna',e:'Gato',svc:'Vacunación',o:2,src:'Personal',st:'Atendida',dur:1},
+  {id:3,day:3,h:'10:30',pet:'Coco',e:'Perro',svc:'Estética',o:3,src:'Chat',st:'Confirmada',dur:2},
+  {id:4,day:3,h:'11:30',pet:'Kiwi',e:'Ave',svc:'Consulta general',o:4,src:'Personal',st:'Confirmada',dur:1},
+  {id:5,day:3,h:'12:00',pet:'Rocky',e:'Perro',svc:'Valoración quirúrgica',o:5,src:'Chat',st:'Pendiente',dur:1},
+  {id:6,day:3,h:'13:00',pet:'Mishi',e:'Gato',svc:'Vacunación',o:6,src:'Chat',st:'Pendiente',dur:1},
+  {id:7,day:3,h:'16:00',pet:'Toby',e:'Perro',svc:'Consulta general',o:7,src:'Personal',st:'Confirmada',dur:1},
+  {id:8,day:3,h:'17:30',pet:'Nala',e:'Perro',svc:'Estética',o:1,src:'Chat',st:'Pendiente',dur:2},
+  {id:9,day:3,h:'18:00',pet:'Pelusa',e:'Conejo',svc:'Consulta general',o:8,src:'Chat',st:'Cancelada',dur:1},
+  {id:10,day:0,h:'10:00',pet:'Toby',e:'Perro',svc:'Estudios complementarios',o:7,src:'Personal',st:'Atendida',dur:1},
+  {id:11,day:0,h:'12:30',pet:'Luna',e:'Gato',svc:'Consulta general',o:2,src:'Chat',st:'Atendida',dur:1},
+  {id:12,day:1,h:'9:30',pet:'Max',e:'Perro',svc:'Vacunación',o:1,src:'Chat',st:'Atendida',dur:1},
+  {id:13,day:1,h:'15:00',pet:'Coco',e:'Perro',svc:'Consulta general',o:3,src:'Personal',st:'Atendida',dur:1},
+  {id:14,day:2,h:'11:00',pet:'Rocky',e:'Perro',svc:'Consulta general',o:5,src:'Chat',st:'Atendida',dur:1},
+  {id:15,day:2,h:'17:00',pet:'Kiwi',e:'Ave',svc:'Estudios complementarios',o:4,src:'Personal',st:'Atendida',dur:1},
+  {id:16,day:4,h:'9:00',pet:'Mishi',e:'Gato',svc:'Consulta general',o:6,src:'Chat',st:'Confirmada',dur:1},
+  {id:17,day:4,h:'11:00',pet:'Nala',e:'Perro',svc:'Vacunación',o:1,src:'Personal',st:'Confirmada',dur:1},
+  {id:18,day:4,h:'14:00',pet:'Pelusa',e:'Conejo',svc:'Consulta general',o:8,src:'Chat',st:'Reprogramada',dur:1},
+  {id:19,day:4,h:'16:30',pet:'Toby',e:'Perro',svc:'Estética',o:7,src:'Chat',st:'Pendiente',dur:2},
+  {id:20,day:5,h:'10:00',pet:'Max',e:'Perro',svc:'Estética',o:1,src:'Chat',st:'Pendiente',dur:2},
+  {id:21,day:5,h:'12:00',pet:'Luna',e:'Gato',svc:'Vacunación',o:2,src:'Personal',st:'Confirmada',dur:1},
+];
+let REQS = [
+  {id:'SOL-0142',t:'cita',st:'Nueva',when:'Hace 12 min',who:'Paola Vega',tel:'656 703 1185',pet:'Bimba (Gato)',svc:'Vacunación',slot:'Vie 23 oct, 11:30',
+   conv:[['bot','¡Hola! Soy el asistente de Vida Animal II. ¿En qué te ayudo?'],['me','Agendar una cita'],['bot','¿Qué servicio necesitas?'],['me','Vacunación'],['bot','¿Cómo se llama tu mascota y qué especie es?'],['me','Bimba, es gata'],['bot','Elige un horario disponible:'],['me','Vie 23 oct, 11:30'],['bot','Listo, Paola. Tu solicitud quedó registrada con el folio SOL-0142. Te confirmamos por WhatsApp.']]},
+  {id:'SOL-0141',t:'canal',st:'Urgente',when:'Hace 25 min',who:'Luis Ortega',tel:'656 228 9046',pet:'Bruno (Perro)',svc:'—',slot:'—',
+   conv:[['bot','¡Hola! Soy el asistente de Vida Animal II. ¿En qué te ayudo?'],['me','mi perro se comió un pedazo de chocolate que hago'],['bot','No entendí del todo tu mensaje. Como puede tratarse de una urgencia, te comunico con el personal de la clínica.'],['me','sí por favor'],['bot','Avisé al personal. Te escribirán por WhatsApp en unos minutos.']]},
+  {id:'SOL-0140',t:'cita',st:'Nueva',when:'Hace 1 h',who:'Andrea Solís',tel:'656 914 3372',pet:'Thor (Perro)',svc:'Estética',slot:'Sáb 24 oct, 12:30',
+   conv:[['bot','¡Hola! Soy el asistente de Vida Animal II. ¿En qué te ayudo?'],['me','Agendar una cita'],['bot','¿Qué servicio necesitas?'],['me','Estética'],['bot','Elige un horario disponible:'],['me','Sáb 24 oct, 12:30'],['bot','Listo, Andrea. Tu solicitud quedó registrada con el folio SOL-0140.']]},
+  {id:'SOL-0139',t:'canal',st:'Requiere atención',when:'Hace 2 h',who:'Gabriela León',tel:'656 450 7781',pet:'—',svc:'Cremación',slot:'—',
+   conv:[['bot','¡Hola! Soy el asistente de Vida Animal II. ¿En qué te ayudo?'],['me','¿Tienen servicio de cremación a domicilio?'],['bot','No tengo esa información. ¿Quieres que te comunique con el personal?'],['me','Sí'],['bot','Avisé al personal. Te escribirán por WhatsApp en unos minutos.']]},
+  {id:'SOL-0138',t:'cita',st:'Registrada',when:'Ayer',who:'Ana Lucía Pérez',tel:'656 290 6614',pet:'Rocky (Perro)',svc:'Valoración quirúrgica',slot:'Jue 22 oct, 12:00',
+   conv:[['bot','¡Hola! Soy el asistente de Vida Animal II. ¿En qué te ayudo?'],['me','Agendar una cita'],['bot','¿Qué servicio necesitas?'],['me','Cirugía'],['bot','Para cirugías primero agendamos una valoración. Elige un horario:'],['me','Jue 22 oct, 12:00'],['bot','Listo, Ana Lucía. Tu solicitud quedó registrada con el folio SOL-0138.']]},
+];
+const USERS = [
+  {n:'Administración Vida Animal II',u:'admin',r:'Administrador',last:'Hoy, 8:52',on:true},
+  {n:'MVZ Laura Ríos',u:'lrios',r:'Personal operativo',last:'Hoy, 9:01',on:true},
+  {n:'MVZ Daniel Ochoa',u:'dochoa',r:'Personal operativo',last:'Ayer, 18:40',on:true},
+  {n:'MVZ Karla Méndez',u:'kmendez',r:'Personal operativo',last:'Hoy, 10:15',on:true},
+  {n:'MVZ Ernesto Silva',u:'esilva',r:'Personal operativo',last:'12 sep 2026',on:false},
+];
+const PERMS = [
+  ['Consultar agenda y citas',1,1],['Registrar, modificar y cancelar citas',1,1],['Atender solicitudes del chat',1,1],
+  ['Consultar y actualizar propietarios y mascotas',1,1],['Cambiar horarios y disponibilidad',1,0],['Editar contenido del sitio y preguntas frecuentes',1,0],['Administrar usuarios y roles',1,0]];
+
+/* ===================== UTILIDADES ===================== */
+const $ = (s,el=document)=>el.querySelector(s);
+const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+const ic = (id,cls='ic')=>`<svg class="${cls}"><use href="#${id}"/></svg>`;
+const ini = n=>n.replace(/^MVZ /,'').split(' ').slice(0,2).map(w=>w[0]).join('');
+const stCls = s=>({Pendiente:'b-pend',Confirmada:'b-conf',Atendida:'b-aten',Cancelada:'b-canc',Reprogramada:'b-repr'}[s]);
+const owner = id=>OWNERS.find(o=>o.id===id);
+const toMin = h=>{const [a,b]=h.split(':').map(Number);return a*60+b};
+const fromMin = m=>`${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`;
+const petIc = e=>e==='Ave'?'i-bird':'i-paw';
+let ROLE='admin';
+function toast(t){const el=$('#toast');$('span',el).textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2600)}
+$$('[data-logo]').forEach(s=>s.innerHTML=LOGO);
+document.addEventListener('click',e=>{const t=e.target.closest('[data-toast]');if(t)toast(t.dataset.toast)});
+
+/* ===================== MODAL ===================== */
+function openModal(title,body,foot){
+  $('#modal').innerHTML=`<div class="modal-h"><h2 id="m-title">${title}</h2><button class="btn-icon" data-close aria-label="Cerrar">${ic('i-x')}</button></div><div class="modal-b">${body}</div>${foot?`<div class="modal-f">${foot}</div>`:''}`;
+  $('#scrim').classList.add('on');
+  setTimeout(()=>{const f=$('#modal input, #modal select, #modal textarea');(f||$('#modal [data-close]')).focus()},30);
+}
+function closeModal(){$('#scrim').classList.remove('on')}
+$('#scrim').addEventListener('click',e=>{if(e.target.id==='scrim'||e.target.closest('[data-close]'))closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+/* ===================== ROUTER ===================== */
+const TITLES={inicio:'Inicio',citas:'Citas',solicitudes:'Solicitudes del chat',propietarios:'Propietarios y mascotas',horarios:'Horarios y disponibilidad',contenido:'Contenido del sitio',usuarios:'Usuarios y roles'};
+function route(){
+  let h=location.hash||'#/sitio';
+  if(!h.startsWith('#/')) return; // anclas internas del sitio
+  let [ ,scr,view]=h.split('/');
+  if(scr==='admin'){
+    view=view||'inicio';
+    if(ROLE==='op' && (view==='usuarios'||view==='contenido')){view='inicio';history.replaceState(null,'','#/admin/inicio')}
+  }
+  $$('.screen').forEach(s=>s.classList.toggle('on',s.dataset.screen===scr));
+  if(scr==='admin'){
+    $$('.view').forEach(v=>v.classList.toggle('on',v.dataset.view===view));
+    $$('.nav-item[data-nav]').forEach(n=>n.classList.toggle('on',n.dataset.nav===view));
+    $('#v-title').textContent=TITLES[view];
+    renderAll();
+  }
+  if(scr!=='sitio') $('#chat').classList.remove('open'), $('#chat-fab').style.display='';
+  $('#pn-go').value=`#/${scr}${view?'/'+view:''}`;
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route);
+$('#pn-go').addEventListener('change',e=>location.hash=e.target.value);
+$$('[data-scroll]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const t=$(a.getAttribute('href'));if(t)window.scrollTo({top:t.offsetTop-76,behavior:'smooth'})}));
+
+/* ===================== SITIO ===================== */
+function renderSite(){
+  const groups=[...new Set(SERVICES.map(s=>s.g))];
+  $('#svc-groups').innerHTML=groups.map(g=>`<div class="svc-group"><h3>${g}</h3>${SERVICES.filter(s=>s.g===g&&s.on).map(s=>`<div class="svc"><div class="svc-ic">${ic(s.ic)}</div><div><h4>${s.n}</h4><p>${s.d}</p></div></div>`).join('')}</div>`).join('');
+  $('#site-hours').innerHTML=[['Lunes a viernes',`${DAYS[0].a} a ${DAYS[0].c}`],['Sábado',DAYS[5].on?`${DAYS[5].a} a ${DAYS[5].c}`:'Cerrado'],['Domingo',DAYS[6].on?`${DAYS[6].a} a ${DAYS[6].c}`:'Cerrado']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+  $('[data-bind="horario-corto"]').textContent=`Lun a sáb desde las ${DAYS[0].a}`;
+}
+
+/* ===================== CHATBOT (RF-06 a RF-12) ===================== */
+const CB={state:'idle',data:{}};
+const body=$('#chat-body');
+function botSay(html,delay=500){
+  return new Promise(r=>{const t=document.createElement('div');t.className='msg bot typing';t.innerHTML='<i></i><i></i><i></i>';body.append(t);body.scrollTop=1e5;
+    setTimeout(()=>{t.className='msg bot';t.innerHTML=html;body.scrollTop=1e5;r()},delay)});
+}
+function meSay(t){const m=document.createElement('div');m.className='msg me';m.textContent=t;body.append(m);body.scrollTop=1e5}
+function chips(opts){const c=document.createElement('div');c.className='chips';
+  opts.forEach(o=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=o.l;if(o.dis){b.disabled=true;b.title='Ocupado'}
+    b.onclick=()=>{c.remove();meSay(o.l);o.fn()};c.append(b)});body.append(c);body.scrollTop=1e5}
+async function cbMenu(first){
+  CB.state='menu';
+  if(first) await botSay('¡Hola! Soy el asistente de Vida Animal II. Puedo ayudarte a agendar una cita o resolver tus dudas.');
+  await botSay('¿Qué necesitas?',350);
+  chips([{l:'Agendar una cita',fn:cbCita},{l:'Preguntas frecuentes',fn:cbFaq},{l:'Horario y ubicación',fn:cbHorario},{l:'Hablar con el personal',fn:cbHumano}]);
+}
+async function cbCita(){
+  CB.data={};CB.state='svc';
+  await botSay('Con gusto. ¿Qué servicio necesitas?');
+  chips(['Consulta general','Vacunación','Estética','Cirugía','Hospedaje','Otro'].map(s=>({l:s,fn:async()=>{
+    CB.data.svc=s==='Cirugía'?'Valoración quirúrgica':s;
+    if(s==='Cirugía') await botSay('Para cirugías primero agendamos una valoración con el médico.');
+    if(s==='Otro') {return cbHumano()}
+    CB.state='pet';await botSay('¿Cómo se llama tu mascota?');$('#chat-in').placeholder='Nombre de tu mascota';$('#chat-in').focus();
+  }})));
+}
+async function cbEspecie(){
+  CB.state='esp';await botSay(`¿Qué especie es ${CB.data.pet}?`);
+  chips(['Perro','Gato','Conejo','Ave','Otra'].map(e=>({l:e,fn:()=>{CB.data.esp=e;cbDia()}})));
+}
+async function cbDia(){
+  CB.state='dia';await botSay('Elige el día:');
+  chips([{l:'Vie 23 oct'},{l:'Sáb 24 oct'},{l:'Lun 26 oct'},{l:'Mar 27 oct'}].map(d=>({l:d.l,fn:()=>{CB.data.dia=d.l;cbHora()}})));
+}
+async function cbHora(retry){
+  CB.state='hora';
+  if(!retry) await botSay(`Estos son los horarios libres para ${CB.data.dia}:`);
+  const hrs=['9:00','9:30','10:00','10:30','11:00','11:30','12:00','16:00','16:30'];
+  const busy=['9:30','11:00'];
+  chips(hrs.map(h=>({l:h,dis:busy.includes(h)||(retry&&h==='10:30'),fn:async()=>{
+    if(h==='10:30'&&!retry){ // excepción UC-04: horario ocupado
+      const n=document.createElement('div');n.className='msg note';n.textContent='Alguien acaba de reservar las 10:30.';body.append(n);
+      await botSay('Ese horario ya no está disponible. Elige otro, por favor:');return cbHora(true);
+    }
+    CB.data.hora=h;CB.state='nombre';await botSay('¿A nombre de quién registro la cita?');$('#chat-in').placeholder='Tu nombre completo';$('#chat-in').focus();
+  }})));
+}
+async function cbResumen(){
+  CB.state='resumen';
+  await botSay('Revisa los datos de tu cita:',400);
+  const s=document.createElement('div');s.className='sum';
+  s.innerHTML=`<dl><dt>Servicio</dt><dd>${CB.data.svc}</dd><dt>Mascota</dt><dd>${CB.data.pet} (${CB.data.esp})</dd><dt>Fecha</dt><dd>${CB.data.dia}, ${CB.data.hora}</dd><dt>Propietario</dt><dd>${CB.data.nombre}</dd><dt>Teléfono</dt><dd>${CB.data.tel}</dd></dl>
+  <div class="row"><button class="btn btn-primary btn-sm" id="cb-ok">${ic('i-check')}Confirmar solicitud</button><button class="btn btn-ghost btn-sm" id="cb-ed">Cambiar datos</button></div>`;
+  body.append(s);body.scrollTop=1e5;
+  $('#cb-ok').onclick=async()=>{s.querySelector('.row').remove();meSay('Confirmar solicitud');
+    const folio='SOL-0143';
+    REQS.unshift({id:folio,t:'cita',st:'Nueva',when:'Justo ahora',who:CB.data.nombre,tel:CB.data.tel,pet:`${CB.data.pet} (${CB.data.esp})`,svc:CB.data.svc,slot:`${CB.data.dia}, ${CB.data.hora}`,
+      conv:[...$$('.msg',body)].filter(m=>!m.classList.contains('typing')&&!m.classList.contains('note')).map(m=>[m.classList.contains('me')?'me':'bot',m.textContent])});
+    await botSay(`Listo, ${CB.data.nombre.split(' ')[0]}. Tu solicitud quedó registrada con el folio <b>${folio}</b>. El personal te confirmará la cita por WhatsApp.`,700);
+    await botSay('¿Te ayudo con algo más?',300);chips([{l:'Volver al inicio',fn:()=>cbMenu()},{l:'No, gracias',fn:()=>botSay('¡Gracias por elegir Vida Animal II! 🐾')}]);
+  };
+  $('#cb-ed').onclick=()=>{s.remove();meSay('Cambiar datos');cbCita()};
+}
+async function cbFaq(){
+  CB.state='faq';await botSay('Estas son las preguntas más comunes:');
+  chips([...FAQ.map(f=>({l:f.q,fn:async()=>{await botSay(f.a);cbMas()}})),{l:'Mi pregunta no está aquí',fn:cbHumano}]);
+}
+async function cbMas(){await botSay('¿Te ayudo con algo más?',300);chips([{l:'Agendar una cita',fn:cbCita},{l:'Otra pregunta',fn:cbFaq},{l:'Hablar con el personal',fn:cbHumano}])}
+async function cbHorario(){await botSay(`Estamos en Plaza del Sol, Ciudad Juárez. Atendemos de lunes a viernes de ${DAYS[0].a} a ${DAYS[0].c} y sábados de ${DAYS[5].a} a ${DAYS[5].c}.`);cbMas()}
+async function cbHumano(){ // RF-10 canalización
+  CB.state='humano';await botSay('Te comunico con el personal de la clínica por WhatsApp. Ten a la mano el nombre de tu mascota.');
+  const c=document.createElement('div');c.className='chips';c.innerHTML=`<button class="btn btn-wa btn-sm" type="button">${ic('i-wa')}Continuar en WhatsApp</button>`;
+  c.firstChild.onclick=()=>toast('Abriría WhatsApp con la clínica');body.append(c);body.scrollTop=1e5;
+}
+$('#chat-form').addEventListener('submit',async e=>{
+  e.preventDefault();const inp=$('#chat-in');const v=inp.value.trim();if(!v)return;inp.value='';meSay(v);
+  $$('.chips',body).forEach(c=>c.remove());
+  if(CB.state==='pet'){CB.data.pet=v.charAt(0).toUpperCase()+v.slice(1);inp.placeholder='Escribe tu mensaje…';return cbEspecie()}
+  if(CB.state==='nombre'){CB.data.nombre=v;CB.state='tel';inp.placeholder='Ej. 656 123 4567';return botSay('¿A qué número de WhatsApp te confirmamos?')}
+  if(CB.state==='tel'){
+    if(v.replace(/\D/g,'').length<10){return botSay('El número debe tener 10 dígitos. Escríbelo de nuevo, por ejemplo 656 123 4567.')}
+    CB.data.tel=v;inp.placeholder='Escribe tu mensaje…';return cbResumen()}
+  const low=v.toLowerCase();
+  if(/cita|agendar|consulta/.test(low)) return cbCita();
+  if(/horario|hora|ubic|dónde|donde/.test(low)) return cbHorario();
+  if(/precio|cuesta|costo/.test(low)){await botSay(FAQ[3].a);return cbMas()}
+  // excepción UC-03: no entendido
+  await botSay('No entendí tu mensaje. Elige una opción o habla directamente con el personal.');
+  chips([{l:'Agendar una cita',fn:cbCita},{l:'Preguntas frecuentes',fn:cbFaq},{l:'Hablar con el personal',fn:cbHumano}]);
+});
+function openChat(mode){
+  $('#chat').classList.add('open');$('#chat-fab').style.display='none';
+  if(!body.children.length||mode==='cita'||mode==='faq'){body.innerHTML='';
+    if(mode==='cita'){botSay('¡Hola! Soy el asistente de Vida Animal II.').then(cbCita)}
+    else if(mode==='faq'){botSay('¡Hola! Soy el asistente de Vida Animal II.').then(cbFaq)}
+    else cbMenu(true)}
+}
+$$('[data-open-chat]').forEach(b=>b.addEventListener('click',()=>openChat(b.dataset.openChat)));
+$('#chat-x').addEventListener('click',()=>{$('#chat').classList.remove('open');$('#chat-fab').style.display=''});
+
+/* ===================== LOGIN (RF-01, RF-02, UC-01) ===================== */
+const ACCOUNTS={admin:{role:'admin',name:'Administración',av:'AD'},lrios:{role:'op',name:'MVZ Laura Ríos',av:'LR'},esilva:{inactive:true}};
+$$('[data-demo]').forEach(b=>b.addEventListener('click',()=>{$('#lg-user').value=b.dataset.demo==='mal'?'lrios':b.dataset.demo;$('#lg-pass').value=b.dataset.demo==='mal'?'12345':'demo';$('#login-form').requestSubmit()}));
+$('#login-form').addEventListener('submit',e=>{
+  e.preventDefault();const u=$('#lg-user').value.trim().toLowerCase(),p=$('#lg-pass').value;const err=$('#login-err');
+  const showErr=t=>{$('span',err).textContent=t;err.classList.add('on')};
+  if(!u||!p) return showErr('Escribe tu usuario y tu contraseña para continuar.');
+  const a=ACCOUNTS[u];
+  if(a&&a.inactive) return showErr('Esta cuenta está desactivada. Pide al administrador que reactive tu acceso.');
+  if(!a||p!=='demo') return showErr('El usuario o la contraseña no coinciden. Revísalos e inténtalo de nuevo.');
+  err.classList.remove('on');setRole(a.role,a);location.hash='#/admin/inicio';
+});
+function setRole(r,a){
+  ROLE=r;a=a||(r==='admin'?ACCOUNTS.admin:ACCOUNTS.lrios);
+  $('#me-name').textContent=a.name;$('#me-av').textContent=a.av;
+  $('#me-role').textContent=r==='admin'?'Administrador':'Personal operativo';$('#me-role').className='role '+(r==='admin'?'admin':'op');
+  $$('[data-role="admin"]').forEach(el=>el.style.display=r==='admin'?'':'none');
+  $('#pn-op').checked=r==='op';
+  $$('[data-adm]').forEach(el=>el.disabled=r!=='admin');
+  $('#ro-note').style.display=r==='admin'?'none':'flex';
+}
+$('#pn-op').addEventListener('change',e=>{setRole(e.target.checked?'op':'admin');route()});
+$('#logout').addEventListener('click',()=>{$('#lg-user').value='';$('#lg-pass').value='';$('#login-err').classList.remove('on')});
+
+/* ===================== PANEL: INICIO ===================== */
+function renderInicio(){
+  const today=APPTS.filter(a=>a.day===3).sort((a,b)=>toMin(a.h)-toMin(b.h));
+  $('#k-hoy').textContent=today.filter(a=>a.st!=='Cancelada').length;
+  $('#k-pend').textContent=APPTS.filter(a=>a.st==='Pendiente').length;
+  $('#k-sol').textContent=REQS.filter(r=>r.t==='cita'&&r.st==='Nueva').length;
+  $('#k-can').textContent=REQS.filter(r=>r.t==='canal'&&r.st!=='Resuelta').length;
+  $('#tl-hoy').innerHTML=today.map(a=>{const o=owner(a.o);return `<li class="${a.h==='12:00'?'now':''}"><time>${a.h}</time><div class="who"><b>${a.pet}</b> <span class="src">${ic(petIc(a.e))}${a.e}</span><small>${a.svc} con ${o.n}</small></div><span class="badge ${stCls(a.st)}">${a.st}</span></li>`}).join('');
+  const att=REQS.filter(r=>r.t==='canal'&&r.st!=='Resuelta');
+  $('#attn').innerHTML=att.length?att.map(r=>`<li><div style="display:flex;gap:8px;align-items:center"><b>${r.who}</b><span class="badge ${r.st==='Urgente'?'b-urg':'b-pend'}">${r.st}</span></div><p>${r.conv.find(c=>c[0]==='me')[1]}</p><a class="btn btn-ghost btn-sm" href="#/admin/solicitudes" data-req="${r.id}">Atender</a></li>`).join(''):`<li class="empty">${ic('i-check')}<h3>Todo al día</h3><p>No hay conversaciones esperando al personal.</p></li>`;
+  $$('#attn [data-req]').forEach(a=>a.addEventListener('click',()=>SEL.req=a.dataset.req));
+}
+
+/* ===================== PANEL: CITAS (RF-11 a RF-14) ===================== */
+const CV={day:3,st:'todas',view:'lista'};
+function renderCitas(){
+  $('#dn-label').textContent=`${DAYNAMES[CV.day]} ${WEEK[CV.day].n} de octubre`;
+  const list=APPTS.filter(a=>a.day===CV.day&&(CV.st==='todas'||a.st===CV.st)).sort((a,b)=>toMin(a.h)-toMin(b.h));
+  $('#appt-body').innerHTML=list.length?list.map(a=>{const o=owner(a.o);const done=a.st==='Atendida'||a.st==='Cancelada';
+    return `<tr class="${a.st==='Cancelada'?'cx':''}"><td class="num">${a.h}</td><td><b>${a.pet}</b> <span class="src">${ic(petIc(a.e))}${a.e}</span></td><td>${a.svc}</td><td>${o.n}<br><span class="src">${o.tel}</span></td>
+    <td><span class="src">${ic(a.src==='Chat'?'i-chat':'i-user')}${a.src==='Chat'?'Asistente':'Personal'}</span></td><td><span class="badge ${stCls(a.st)}">${a.st}</span></td>
+    <td><div class="acts">${a.st==='Pendiente'?`<button class="btn btn-ghost btn-sm" data-a="conf" data-id="${a.id}">Confirmar</button>`:''}${done?'':`<button class="btn-icon" title="Reprogramar" aria-label="Reprogramar" data-a="mod" data-id="${a.id}">${ic('i-edit')}</button><button class="btn-icon" title="Cancelar" aria-label="Cancelar" data-a="can" data-id="${a.id}">${ic('i-x')}</button>`}</div></td></tr>`}).join('')
+    :`<tr><td colspan="7"><div class="empty">${ic('i-cal')}<h3>Sin citas en este filtro</h3><p>Cambia el día o el estado, o registra una cita nueva.</p></div></td></tr>`;
+  // semana
+  const hrs=[];for(let m=540;m<1140;m+=30)hrs.push(m);
+  let g=`<div class="wk-h"></div>`+WEEK.map((w,i)=>`<div class="wk-h ${i===3?'today':''}">${w.d}<small>${w.n} oct</small></div>`).join('');
+  hrs.forEach(m=>{g+=`<div class="wk-t">${m%60===0?fromMin(m):''}</div>`;
+    WEEK.forEach((w,i)=>{const closed=i===5&&m>=900;const a=APPTS.find(x=>x.day===i&&toMin(x.h)===m);
+      g+=`<div class="wk-c ${closed?'closed':''}">${a?`<div class="ev ${stCls(a.st)}" data-a="mod" data-id="${a.id}" style="height:${a.dur*52-6}px;position:relative;z-index:2;background:#fff"><b>${a.h} ${a.pet}</b>${a.svc}</div>`:''}</div>`})});
+  $('#week').innerHTML=g;
+  $('#cv-lista').style.display=CV.view==='lista'?'':'none';$('#cv-semana').style.display=CV.view==='semana'?'':'none';
+  $('#dnav').style.visibility=CV.view==='lista'?'visible':'hidden';
+}
+$$('[data-cv]').forEach(b=>b.addEventListener('click',()=>{CV.view=b.dataset.cv;$$('[data-cv]').forEach(x=>x.classList.toggle('on',x===b));renderCitas()}));
+$$('[data-dn]').forEach(b=>b.addEventListener('click',()=>{CV.day=Math.max(0,Math.min(5,CV.day+Number(b.dataset.dn)));renderCitas()}));
+$$('#st-filter button').forEach(b=>b.addEventListener('click',()=>{CV.st=b.dataset.st;$$('#st-filter button').forEach(x=>x.classList.toggle('on',x===b));renderCitas()}));
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;const a=APPTS.find(x=>x.id==b.dataset.id);if(!a)return;
+  if(b.dataset.a==='conf'){a.st='Confirmada';renderAll();toast(`Cita de ${a.pet} confirmada`)}
+  if(b.dataset.a==='can') cancelModal(a);
+  if(b.dataset.a==='mod') reprogModal(a);
+});
+function cancelModal(a){
+  const o=owner(a.o);
+  openModal('Cancelar cita',`<div class="mini-ctx"><b>${a.pet}</b>, ${a.svc}<br>${DAYNAMES[a.day]} ${WEEK[a.day].n} de octubre, ${a.h}. ${o.n}</div>
+  <div class="field"><label for="cx-m">Motivo de la cancelación</label><select id="cx-m"><option>El propietario lo solicitó</option><option>No se presentó</option><option>Médico no disponible</option><option>Otro</option></select></div>
+  <div class="field" style="margin:0"><label><input type="checkbox" checked> Avisar al propietario por WhatsApp</label></div>`,
+  `<button class="btn btn-ghost" data-close>Conservar cita</button><button class="btn btn-danger" id="cx-ok">Cancelar cita</button>`);
+  $('#cx-ok').onclick=()=>{a.st='Cancelada';closeModal();renderAll();toast(`Cita cancelada. Las ${a.h} quedaron disponibles.`)};
+}
+function slotPicker(day,sel,ignoreId){
+  const taken=APPTS.filter(x=>x.day===day&&x.st!=='Cancelada'&&x.id!==ignoreId).map(x=>x.h);
+  const end=day===5?900:1140;let s='';
+  for(let m=540;m<end;m+=30){const h=fromMin(m);s+=`<button type="button" class="slot ${taken.includes(h)?'busy':''} ${h===sel?'on':''}" data-slot="${h}" ${taken.includes(h)?'aria-disabled="true" title="Ocupado"':''}>${h}</button>`}
+  return s;
+}
+function wireSlots(day,ignoreId,onPick){
+  $$('#modal .slot').forEach(b=>b.onclick=()=>{
+    const err=$('#slot-err');
+    if(b.classList.contains('busy')){err.classList.add('on');$('span',err).textContent=`Las ${b.dataset.slot} ya tienen una cita. Elige un horario libre.`;return}
+    err.classList.remove('on');$$('#modal .slot').forEach(x=>x.classList.remove('on'));b.classList.add('on');onPick(b.dataset.slot)});
+}
+function reprogModal(a){
+  const o=owner(a.o);let pick=a.h,day=a.day;
+  const draw=()=>{$('#rp-slots').innerHTML=slotPicker(day,day===a.day?pick:null,a.id);wireSlots(day,a.id,h=>pick=h)};
+  openModal('Reprogramar cita',`<div class="mini-ctx"><b>${a.pet}</b>, ${a.svc}<br>Actual: ${DAYNAMES[a.day]} ${WEEK[a.day].n} de octubre, ${a.h}. ${o.n}</div>
+  <div class="field"><label for="rp-d">Nuevo día</label><select id="rp-d">${WEEK.map((w,i)=>`<option value="${i}" ${i===a.day?'selected':''}>${DAYNAMES[i]} ${w.n} de octubre</option>`).join('')}</select></div>
+  <div class="field" style="margin-bottom:8px"><label>Horario</label></div>
+  <div class="alert" id="slot-err" role="alert">${ic('i-alert')}<span></span></div>
+  <div class="slots" id="rp-slots"></div>`,
+  `<button class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple" id="rp-ok">${ic('i-check')}Guardar cambio</button>`);
+  draw();
+  $('#rp-d').onchange=e=>{day=Number(e.target.value);pick=null;draw()};
+  $('#rp-ok').onclick=()=>{if(!pick){const err=$('#slot-err');err.classList.add('on');$('span',err).textContent='Elige un horario para la cita.';return}
+    a.day=day;a.h=pick;a.st='Reprogramada';closeModal();CV.day=day;renderAll();toast(`Cita de ${a.pet} reprogramada para las ${pick}`)};
+}
+$('#new-appt').addEventListener('click',()=>{
+  let pick=null,day=CV.day;
+  openModal('Nueva cita',`<div class="grid2">
+  <div class="field"><label for="na-o">Propietario</label><select id="na-o">${OWNERS.map(o=>`<option value="${o.id}">${o.n}</option>`).join('')}</select></div>
+  <div class="field"><label for="na-p">Mascota</label><select id="na-p"></select></div></div>
+  <div class="grid2"><div class="field"><label for="na-s">Servicio</label><select id="na-s">${SERVICES.filter(s=>s.g!=='Tienda y acompañamiento').map(s=>`<option>${s.n}</option>`).join('')}</select></div>
+  <div class="field"><label for="na-d">Día</label><select id="na-d">${WEEK.map((w,i)=>`<option value="${i}" ${i===day?'selected':''}>${DAYNAMES[i]} ${w.n} oct</option>`).join('')}</select></div></div>
+  <div class="field" style="margin-bottom:8px"><label>Horario</label></div>
+  <div class="alert" id="slot-err" role="alert">${ic('i-alert')}<span></span></div>
+  <div class="slots" id="rp-slots"></div>`,
+  `<button class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple" id="na-ok">${ic('i-check')}Registrar cita</button>`);
+  const pets=()=>{$('#na-p').innerHTML=owner(Number($('#na-o').value)).pets.map(p=>`<option>${p.n}</option>`).join('')};pets();
+  const draw=()=>{$('#rp-slots').innerHTML=slotPicker(day,pick);wireSlots(day,null,h=>pick=h)};draw();
+  $('#na-o').onchange=pets;$('#na-d').onchange=e=>{day=Number(e.target.value);pick=null;draw()};
+  $('#na-ok').onclick=()=>{if(!pick){const err=$('#slot-err');err.classList.add('on');$('span',err).textContent='Elige un horario libre para registrar la cita.';return}
+    const o=owner(Number($('#na-o').value));const p=o.pets.find(x=>x.n===$('#na-p').value);
+    APPTS.push({id:Date.now(),day,h:pick,pet:p.n,e:p.e,svc:$('#na-s').value.replace('Vacunación y medicina preventiva','Vacunación'),o:o.id,src:'Personal',st:'Confirmada',dur:1});
+    closeModal();CV.day=day;renderAll();toast(`Cita registrada: ${p.n}, ${DAYNAMES[day].toLowerCase()} a las ${pick}`)};
+});
+
+/* ===================== PANEL: SOLICITUDES (RF-09, RF-10) ===================== */
+const SEL={req:'SOL-0142',owner:1,sf:'abiertas'};
+function renderSol(){
+  const open=r=>!['Registrada','Resuelta'].includes(r.st);
+  const list=REQS.filter(r=>SEL.sf==='todas'||open(r));
+  $('#nav-count').textContent=REQS.filter(open).length;$('#nav-count').style.display=REQS.filter(open).length?'':'none';
+  if(!list.find(r=>r.id===SEL.req)) SEL.req=list[0]?.id;
+  const bcls=s=>({Nueva:'b-new',Urgente:'b-urg','Requiere atención':'b-pend',Registrada:'b-aten',Resuelta:'b-aten'}[s]);
+  $('#ilist').innerHTML=list.length?list.map(r=>`<li><button class="${r.id===SEL.req?'on':''}" data-r="${r.id}"><div class="r1"><b>${r.who}</b><span class="badge ${bcls(r.st)}">${r.st}</span><small>${r.when}</small></div>
+    <p>${r.t==='cita'?`${ic('i-cal','ic" style="width:14px;height:14px;vertical-align:-2px')} Cita: ${r.svc}, ${r.slot}`:r.conv.find(c=>c[0]==='me')[1]}</p></button></li>`).join(''):`<li class="empty">${ic('i-check')}<h3>Sin pendientes</h3><p>Las nuevas solicitudes del asistente aparecerán aquí.</p></li>`;
+  $$('#ilist [data-r]').forEach(b=>b.onclick=()=>{SEL.req=b.dataset.r;renderSol()});
+  const r=REQS.find(x=>x.id===SEL.req);
+  if(!r){$('#idetail').innerHTML=`<div class="empty">${ic('i-chat')}<h3>Selecciona una conversación</h3></div>`;return}
+  $('#idetail').innerHTML=`<div class="panel-h"><h2>${r.t==='cita'?'Solicitud de cita':'Canalización al personal'}</h2><span class="src">Folio ${r.id}</span></div>
+   <div class="ireq"><div><b>Propietario</b>${r.who}</div><div><b>WhatsApp</b>${r.tel}</div><div><b>Mascota</b>${r.pet}</div><div><b>${r.t==='cita'?'Horario pedido':'Tema'}</b>${r.t==='cita'?r.slot:r.svc==='—'?'Posible urgencia':r.svc}</div></div>
+   <div class="convo">${r.conv.map(c=>`<div class="msg ${c[0]}">${c[1]}</div>`).join('')}</div>
+   <div class="iacts">${open(r)?(r.t==='cita'?`<button class="btn btn-purple" id="rq-ok">${ic('i-check')}Registrar en la agenda</button><button class="btn btn-ghost" id="rq-alt">Proponer otro horario</button>`:`<button class="btn btn-wa" data-toast="Abriría WhatsApp con ${r.who}">${ic('i-wa')}Atender por WhatsApp</button><button class="btn btn-ghost" id="rq-done">${ic('i-check')}Marcar como resuelta</button>`):`<span class="badge b-aten">${r.st}</span><span style="color:var(--ink-2);font-size:14.5px">No requiere más acciones.</span>`}</div>`;
+  if($('#rq-ok'))$('#rq-ok').onclick=()=>{r.st='Registrada';toast(`Cita de ${r.pet.split(' ')[0]} registrada en la agenda`);renderAll()};
+  if($('#rq-alt'))$('#rq-alt').onclick=()=>toast('Enviaría al propietario otros horarios libres por WhatsApp');
+  if($('#rq-done'))$('#rq-done').onclick=()=>{r.st='Resuelta';toast('Conversación marcada como resuelta');renderAll()};
+}
+$$('#sol-filter button').forEach(b=>b.addEventListener('click',()=>{SEL.sf=b.dataset.sf;$$('#sol-filter button').forEach(x=>x.classList.toggle('on',x===b));renderSol()}));
+
+/* ===================== PANEL: PROPIETARIOS (RF-16 a RF-18) ===================== */
+function renderOwners(){
+  const q=$('#o-search').value.trim().toLowerCase();
+  const list=OWNERS.filter(o=>!q||o.n.toLowerCase().includes(q)||o.tel.replace(/\s/g,'').includes(q.replace(/\s/g,''))||o.pets.some(p=>p.n.toLowerCase().includes(q)));
+  if(!list.find(o=>o.id===SEL.owner)&&list[0]) SEL.owner=list[0].id;
+  $('#olist').innerHTML=list.length?list.map(o=>`<li><button class="${o.id===SEL.owner?'on':''}" data-o="${o.id}"><span class="avatar">${ini(o.n)}</span><span><b>${o.n}</b><small>${o.pets.map(p=>p.n).join(', ')}, ${o.tel}</small></span></button></li>`).join('')
+    :`<li class="empty">${ic('i-search')}<h3>Sin resultados para «${$('#o-search').value}»</h3><p>Revisa la ortografía o registra al propietario.</p></li>`;
+  $$('#olist [data-o]').forEach(b=>b.onclick=()=>{SEL.owner=Number(b.dataset.o);renderOwners()});
+  const o=list.length?owner(SEL.owner):null;
+  if(!o){$('#odetail').innerHTML=`<div class="empty">${ic('i-users')}<h3>No hay un registro seleccionado</h3><p>Busca otro nombre o registra un propietario nuevo.</p><button class="btn btn-purple btn-sm" style="margin-top:12px" onclick="$('#new-owner').click()">${ic('i-plus')}Registrar propietario</button></div>`;return}
+  const hist=APPTS.filter(a=>a.o===o.id).sort((a,b)=>b.day-a.day||toMin(b.h)-toMin(a.h));
+  $('#odetail').innerHTML=`<div class="odetail-h"><span class="avatar">${ini(o.n)}</span><div><h2>${o.n}</h2><span class="src">Cliente desde ${o.desde}</span></div><div class="sp"><button class="btn btn-ghost btn-sm" id="ed-o">${ic('i-edit')}Editar datos</button></div></div>
+  <div class="facts"><div><b>WhatsApp</b>${o.tel}</div><div><b>Correo</b>${o.mail}</div><div><b>Citas registradas</b>${hist.length}</div></div>
+  <div class="pets">${o.pets.map((p,i)=>`<div class="pet"><span class="pet-ic">${ic(petIc(p.e))}</span><div><h4>${p.n}</h4><dl><dt>Especie</dt><dd>${p.e}, ${p.r}</dd><dt>Edad</dt><dd>${p.ed}</dd><dt>Sexo</dt><dd>${p.s}</dd><dt>Peso</dt><dd>${p.p}</dd></dl></div><button class="btn-icon" aria-label="Editar ${p.n}" data-ep="${i}">${ic('i-edit')}</button></div>`).join('')}</div>
+  <h3 class="sub-h">Citas de esta semana</h3>
+  <div class="table-wrap" style="padding:10px 8px 8px"><table class="t"><tbody>${hist.length?hist.map(a=>`<tr><td class="num">${WEEK[a.day].d} ${WEEK[a.day].n}, ${a.h}</td><td>${a.pet}</td><td>${a.svc}</td><td><span class="badge ${stCls(a.st)}">${a.st}</span></td></tr>`).join(''):'<tr><td style="color:var(--ink-3)">Sin citas esta semana.</td></tr>'}</tbody></table></div>`;
+  $('#ed-o').onclick=()=>ownerModal(o);
+  $$('[data-ep]').forEach(b=>b.onclick=()=>petModal(o,o.pets[b.dataset.ep]));
+}
+$('#o-search').addEventListener('input',renderOwners);
+function ownerModal(o){
+  const isNew=!o;o=o||{n:'',tel:'',mail:''};
+  openModal(isNew?'Registrar propietario':'Editar propietario',`<div class="field"><label for="eo-n">Nombre completo</label><input id="eo-n" value="${o.n}"></div>
+  <div class="grid2"><div class="field"><label for="eo-t">WhatsApp</label><input id="eo-t" value="${o.tel}" placeholder="656 123 4567"></div><div class="field"><label for="eo-m">Correo (opcional)</label><input id="eo-m" value="${o.mail==='—'?'':o.mail}"></div></div>
+  ${isNew?`<div class="grid2"><div class="field"><label for="eo-p">Nombre de la mascota</label><input id="eo-p"></div><div class="field"><label for="eo-e">Especie</label><select id="eo-e"><option>Perro</option><option>Gato</option><option>Conejo</option><option>Ave</option><option>Otra</option></select></div></div>`:''}
+  <div class="alert" id="eo-err" role="alert">${ic('i-alert')}<span></span></div>`,
+  `<button class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple" id="eo-ok">${ic('i-check')}${isNew?'Registrar propietario':'Guardar cambios'}</button>`);
+  $('#eo-ok').onclick=()=>{const n=$('#eo-n').value.trim(),t=$('#eo-t').value.trim();
+    if(!n||t.replace(/\D/g,'').length<10){$('#eo-err').classList.add('on');$('#eo-err span').textContent='Escribe el nombre y un WhatsApp de 10 dígitos.';return}
+    if(isNew){const id=OWNERS.length+1;OWNERS.unshift({id,n,tel:t,mail:$('#eo-m').value||'—',desde:'Octubre 2026',pets:[{n:$('#eo-p').value||'Sin nombre',e:$('#eo-e').value,r:'—',ed:'—',s:'—',p:'—'}]});SEL.owner=id;$('#o-search').value=''}
+    else{o.n=n;o.tel=t;o.mail=$('#eo-m').value||'—'}
+    closeModal();renderAll();toast(isNew?'Propietario registrado':'Datos del propietario actualizados')};
+}
+function petModal(o,p){
+  openModal(`Editar a ${p.n}`,`<div class="grid2"><div class="field"><label for="ep-n">Nombre</label><input id="ep-n" value="${p.n}"></div><div class="field"><label for="ep-e">Especie</label><select id="ep-e">${['Perro','Gato','Conejo','Ave','Otra'].map(e=>`<option ${e===p.e?'selected':''}>${e}</option>`).join('')}</select></div></div>
+  <div class="grid2"><div class="field"><label for="ep-r">Raza</label><input id="ep-r" value="${p.r}"></div><div class="field"><label for="ep-ed">Edad</label><input id="ep-ed" value="${p.ed}"></div></div>
+  <div class="grid2"><div class="field"><label for="ep-s">Sexo</label><select id="ep-s"><option ${p.s==='Macho'?'selected':''}>Macho</option><option ${p.s==='Hembra'?'selected':''}>Hembra</option></select></div><div class="field"><label for="ep-p">Peso</label><input id="ep-p" value="${p.p}"><span class="hint">Usa gramos para aves y especies pequeñas.</span></div></div>`,
+  `<button class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple" id="ep-ok">${ic('i-check')}Guardar cambios</button>`);
+  $('#ep-ok').onclick=()=>{Object.assign(p,{n:$('#ep-n').value,e:$('#ep-e').value,r:$('#ep-r').value,ed:$('#ep-ed').value,s:$('#ep-s').value,p:$('#ep-p').value});closeModal();renderAll();toast(`Datos de ${p.n} actualizados`)};
+}
+$('#new-owner').addEventListener('click',()=>ownerModal(null));
+
+/* ===================== PANEL: HORARIOS (RF-15) ===================== */
+function renderHorarios(){
+  const opts=(sel,dis)=>`<select ${dis?'disabled':''}>${['8:00','8:30','9:00','9:30','10:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'].map(h=>`<option ${h===sel?'selected':''}>${h}</option>`).join('')}</select>`;
+  $('#days').innerHTML=DAYS.map((d,i)=>`<div class="day-row" data-d="${i}"><b>${d.d}</b><button class="sw" role="switch" aria-checked="${d.on}" aria-label="Abrir ${d.d}" ${ROLE!=='admin'?'disabled':''}></button>
+    ${d.on?`<label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink-2)">Abre ${opts(d.a,ROLE!=='admin')}</label><label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink-2)">Cierra ${opts(d.c,ROLE!=='admin')}</label>`:`<span class="closed-t">Cerrado. El asistente no ofrece horarios este día.</span>`}</div>`).join('');
+  $$('#days .sw').forEach(s=>s.onclick=()=>{const d=DAYS[s.closest('.day-row').dataset.d];d.on=!d.on;if(d.on&&!d.a){d.a='10:00';d.c='14:00'}renderHorarios()});
+  $$('#days .day-row').forEach(r=>{const sel=$$('select',r);const d=DAYS[r.dataset.d];if(sel[0]){sel[0].onchange=e=>d.a=e.target.value;sel[1].onchange=e=>d.c=e.target.value}});
+  $('#off-list').innerHTML=OFF.map((o,i)=>`<li>${ic('i-cal')}<div><b>${o.f}</b></div><span>${o.m}</span>${ROLE==='admin'?`<button class="btn-icon" style="padding:4px;border:0" aria-label="Quitar" data-off="${i}">${ic('i-x')}</button>`:''}</li>`).join('');
+  $$('[data-off]').forEach(b=>b.onclick=()=>{OFF.splice(b.dataset.off,1);renderHorarios()});
+}
+$('#save-h').addEventListener('click',()=>{renderSite();toast('Horarios guardados. El sitio y el asistente ya usan el nuevo horario.')});
+$('#add-off').addEventListener('click',()=>{
+  openModal('Agregar día sin servicio',`<div class="field"><label for="of-f">Fecha</label><input id="of-f" type="date" value="2026-12-12"></div><div class="field"><label for="of-m">Motivo</label><input id="of-m" value="Día de la Virgen de Guadalupe"></div>`,
+  `<button class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple" id="of-ok">${ic('i-check')}Agregar día</button>`);
+  $('#of-ok').onclick=()=>{const v=$('#of-f').value;const [y,m,d]=v.split('-');const mes=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][m-1];
+    OFF.push({f:`${Number(d)} de ${mes} de ${y}`,m:$('#of-m').value});closeModal();renderHorarios();toast('Día sin servicio agregado')};
+});
+
+/* ===================== PANEL: CONTENIDO ===================== */
+function renderCMS(){
+  $('#cms-svc').innerHTML=SERVICES.map((s,i)=>`<div class="cms-row"><span class="svc-ic" style="width:38px;height:38px">${ic(s.ic)}</span><div class="grow"><b>${s.n}</b><small>${s.g}</small></div><button class="btn-icon" aria-label="Editar ${s.n}" data-es="${i}">${ic('i-edit')}</button><button class="sw" role="switch" aria-checked="${s.on}" aria-label="Mostrar ${s.n} en el sitio" data-vs="${i}"></button></div>`).join('');
+  $$('[data-vs]').forEach(b=>b.onclick=()=>{const s=SERVICES[b.dataset.vs];s.on=!s.on;renderCMS();renderSite();toast(s.on?`${s.n} visible en el sitio`:`${s.n} oculto del sitio`)});
+  $$('[data-es]').forEach(b=>b.onclick=()=>{const s=SERVICES[b.dataset.es];
+    openModal('Editar servicio',`<div class="field"><label for="es-n">Nombre</label><input id="es-n" value="${s.n}"></div><div class="field"><label for="es-d">Descripción para el sitio</label><textarea id="es-d" rows="3">${s.d}</textarea><span class="hint">Una o dos frases. Así aparece en la sección de servicios.</span></div>`,
+    `<button class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple" id="es-ok">${ic('i-check')}Guardar servicio</button>`);
+    $('#es-ok').onclick=()=>{s.n=$('#es-n').value;s.d=$('#es-d').value;closeModal();renderCMS();renderSite();toast('Servicio actualizado en el sitio')}});
+  $('#cms-faq').innerHTML=FAQ.map(f=>`<div class="faq"><b>${f.q}</b><p>${f.a}</p></div>`).join('');
+}
+$('#save-c').addEventListener('click',()=>{$('[data-bind="tel"]').textContent=$('#c-tel').value;$('[data-bind="dir"]').textContent=$('#c-dir').value;toast('Datos de contacto actualizados en el sitio')});
+
+/* ===================== PANEL: USUARIOS (RF-02) ===================== */
+function renderUsers(){
+  $('#users-body').innerHTML=USERS.map((u,i)=>`<tr class="${u.on?'':'cx'}"><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar" style="width:32px;height:32px;font-size:13px">${ini(u.n)}</span><b>${u.n}</b></div></td><td>${u.u}</td><td><span class="role ${u.r==='Administrador'?'admin':'op'}">${u.r}</span></td><td>${u.last}</td>
+  <td><button class="sw" role="switch" aria-checked="${u.on}" aria-label="Acceso de ${u.n}" data-us="${i}" ${i===0?'disabled title="No puedes desactivar tu propia cuenta"':''}></button></td><td><div class="acts"><button class="btn-icon" aria-label="Editar" data-toast="Abriría la edición de ${u.n}">${ic('i-edit')}</button></div></td></tr>`).join('');
+  $$('[data-us]').forEach(b=>b.onclick=()=>{const u=USERS[b.dataset.us];u.on=!u.on;ACCOUNTS[u.u]=u.on?(ACCOUNTS[u.u]&&!ACCOUNTS[u.u].inactive?ACCOUNTS[u.u]:{role:'op',name:u.n,av:ini(u.n)}):{inactive:true};renderUsers();toast(u.on?`Acceso de ${u.n} activado`:`Acceso de ${u.n} desactivado`)});
+  $('#perm').innerHTML=`<thead><tr><th>Permiso</th><th>Administrador</th><th>Personal operativo</th></tr></thead><tbody>${PERMS.map(p=>`<tr><td>${p[0]}</td>${[p[1],p[2]].map(v=>`<td class="${v?'yes':'no'}">${ic(v?'i-check':'i-x')}<span class="sr">${v?'Sí':'No'}</span></td>`).join('')}</tr>`).join('')}</tbody>`;
+}
+$('#new-user').addEventListener('click',()=>{
+  openModal('Agregar usuario',`<div class="field"><label for="nu-n">Nombre completo</label><input id="nu-n" placeholder="MVZ Nombre Apellido"></div><div class="grid2"><div class="field"><label for="nu-u">Usuario</label><input id="nu-u" placeholder="napellido"></div><div class="field"><label for="nu-r">Rol</label><select id="nu-r"><option>Personal operativo</option><option>Administrador</option></select></div></div><p class="hint" style="color:var(--ink-3);font-size:14px">La persona recibirá una contraseña temporal y deberá cambiarla en su primer acceso.</p>`,
+  `<button class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-purple" id="nu-ok">${ic('i-check')}Agregar usuario</button>`);
+  $('#nu-ok').onclick=()=>{const n=$('#nu-n').value.trim()||'MVZ Nuevo Usuario';USERS.push({n,u:$('#nu-u').value||'nuevo',r:$('#nu-r').value,last:'Sin acceso aún',on:true});closeModal();renderUsers();toast(`${n} agregado como ${$('#nu-r')?'':''}usuario`)};
+});
+
+/* ===================== GENERAL ===================== */
+function renderAll(){renderInicio();renderCitas();renderSol();renderOwners();renderHorarios();renderCMS();renderUsers()}
+$('#pn-wf').addEventListener('change',e=>document.body.classList.toggle('wf',e.target.checked));
+$('#pn-min').addEventListener('click',()=>{$('#pnav').classList.toggle('min');$('#pn-min').textContent=$('#pnav').classList.contains('min')?'abrir':'minimizar'});
+$('#pn-hide').addEventListener('click',()=>{$('#pnav').classList.add('gone');toast('Navegador oculto. Recarga la página para verlo de nuevo.')});
+// parámetros: ?wf=1 (wireframe) ?clean=1 (sin navegador) ?rol=op
+const qs=new URLSearchParams(location.search);
+if(qs.get('wf')==='1'){document.body.classList.add('wf');$('#pn-wf').checked=true}
+if(qs.get('clean')==='1')$('#pnav').classList.add('gone');
+setRole(qs.get('rol')==='op'?'op':'admin');
+renderSite();renderAll();route();
+</script>
+</body>
+</html>

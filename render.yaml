@@ -1,0 +1,34 @@
+# Configuración para publicar el sistema en Render (https://render.com).
+# La base de datos NO vive en Render: se usa PostgreSQL en Neon para que los datos sean permanentes.
+# Guía completa: docs/despliegue.md
+services:
+  - type: web
+    name: vida-animal-ii
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # En cada arranque aplica las migraciones y crea lo que falte (no borra ni duplica nada).
+    startCommand: >-
+      alembic upgrade head &&
+      python seed.py --sin-ejemplos &&
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
+    healthCheckPath: /login
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.5"
+      - key: DATABASE_URL
+        sync: false          # pega aquí la cadena de conexión de Neon
+      - key: SECRET_KEY
+        generateValue: true
+      - key: COOKIE_SEGURA
+        value: "true"
+      - key: ZONA_HORARIA
+        value: America/Ciudad_Juarez
+      - key: ADMIN_USUARIO
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: OPERATIVO_USUARIO
+        value: lrios
+      - key: OPERATIVO_PASSWORD
+        sync: false

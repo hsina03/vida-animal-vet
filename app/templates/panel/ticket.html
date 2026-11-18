@@ -1,0 +1,43 @@
+{% extends "panel/base.html" %}
+{% from "_macros.html" import ic, badge, csrf, logo %}
+{% block vista %}
+<div class="toolbar no-print">
+  <a class="btn btn-ghost" href="/panel/caja">{{ ic("i-left") }}Volver a caja</a>
+  <div class="tb-r">
+    <button class="btn btn-ghost" type="button" data-imprimir>{{ ic("i-printer") }}Imprimir ticket</button>
+    {% if yo.es_admin and not venta.cancelada %}<button class="btn btn-ghost" type="button" style="color:var(--err)" data-modal="m-cancelar-venta">{{ ic("i-x") }}Cancelar venta</button>{% endif %}
+    <a class="btn btn-purple" href="/panel/caja">{{ ic("i-plus") }}Nueva venta</a>
+  </div>
+</div>
+<div class="ticket panel">
+  <div class="ticket-h">{{ logo("ticket-logo") }}<b>VIDA ANIMAL II</b><span>{{ contacto.direccion }}</span><span>Tel. {{ contacto.telefono }}</span></div>
+  <div class="ticket-row"><span>Folio</span><b>{{ venta.folio }}</b></div>
+  <div class="ticket-row"><span>Fecha</span><span>{{ venta.creado.date()|fecha_corta }} {{ venta.creado.year }}, {{ venta.creado|hora }}</span></div>
+  {% if venta.propietario %}<div class="ticket-row"><span>Cliente</span><span>{{ venta.propietario.nombre }}</span></div>{% endif %}
+  {% if venta.mascota %}<div class="ticket-row"><span>Mascota</span><span>{{ venta.mascota.nombre }}</span></div>{% endif %}
+  <div class="ticket-row"><span>Atendió</span><span>{{ venta.usuario.nombre if venta.usuario else "—" }}</span></div>
+  {% if venta.cancelada %}<div class="alert on" style="margin:10px 0">{{ ic("i-alert") }}<span>Venta cancelada el {{ venta.cancelada_en.date()|fecha_corta }} por {{ venta.cancelada_por.nombre if venta.cancelada_por else "—" }}: {{ venta.motivo_cancelacion }}</span></div>{% endif %}
+  <table class="ticket-t">
+    <thead><tr><th>Concepto</th><th>Cant.</th><th>Importe</th></tr></thead>
+    <tbody>{% for c in venta.conceptos %}<tr><td>{{ c.descripcion }}<br><small>{{ c.precio_unitario|dinero }} c/u</small></td><td>{{ c.cantidad|cantidad }}</td><td>{{ c.importe|dinero }}</td></tr>{% endfor %}</tbody>
+  </table>
+  <div class="ticket-row"><span>Subtotal</span><span>{{ venta.subtotal|dinero }}</span></div>
+  {% if venta.descuento %}<div class="ticket-row"><span>Descuento</span><span>-{{ venta.descuento|dinero }}</span></div>{% endif %}
+  <div class="ticket-row ticket-total"><span>Total</span><b>{{ venta.total|dinero }}</b></div>
+  <div class="ticket-row"><span>Pago</span><span>{{ venta.metodo_txt }}{% if venta.referencia %} · {{ venta.referencia }}{% endif %}</span></div>
+  {% if venta.metodo == "efectivo" %}<div class="ticket-row"><span>Recibido</span><span>{{ venta.recibido|dinero }}</span></div><div class="ticket-row"><span>Cambio</span><span>{{ venta.cambio|dinero }}</span></div>{% endif %}
+  {% if venta.notas %}<p class="ticket-n">{{ venta.notas }}</p>{% endif %}
+  <p class="ticket-n">¡Gracias por su preferencia! Este ticket no es un comprobante fiscal.</p>
+</div>
+{% endblock %}
+{% block modales %}
+<template id="m-cancelar-venta" data-titulo="Cancelar venta {{ venta.folio }}">
+  <form method="post" action="/panel/caja/ventas/{{ venta.id }}/cancelar">{{ csrf(request) }}
+    <div class="modal-b">
+      <p class="mini-ctx">Total {{ venta.total|dinero }}. Los productos de esta venta regresarán al inventario.</p>
+      <div class="field"><label for="cv-m">Motivo de la cancelación</label><input id="cv-m" name="motivo" maxlength="200" required placeholder="Ej. Cobro duplicado, el cliente devolvió el producto"></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Descartar</button><button class="btn btn-danger">{{ ic("i-x") }}Cancelar venta</button></div>
+  </form>
+</template>
+{% endblock %}

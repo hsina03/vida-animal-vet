@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ic, marca, csrf %}
+{% block titulo %}Inicia sesión · Vida Animal II{% endblock %}
+{% block cuerpo %}
+<div class="login">
+  <div class="login-art">
+    {{ marca("/") }}
+    <svg class="pulse" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60 H600 l30 -34 l36 58 l32 -76 l30 52 H1440"/></svg>
+    <h2>La agenda de la clínica, en un solo lugar</h2>
+    <p>Consulta las citas del día, atiende las solicitudes del asistente y mantén los horarios al corriente.</p>
+  </div>
+  <div class="login-form">
+    <form method="post" action="/login" novalidate>
+      {{ csrf(request) }}
+      <input type="hidden" name="siguiente" value="{{ siguiente }}">
+      <a class="back" href="/">{{ ic("i-left") }}Volver al sitio</a>
+      <h1>Inicia sesión</h1>
+      <p class="sub">Acceso exclusivo para el personal de Vida Animal II.</p>
+      {% for f in flash %}<div class="alert on {{ 'ok' if f.tipo == 'ok' else '' }}" role="status">{{ ic("i-check" if f.tipo == 'ok' else "i-alert") }}<span>{{ f.texto }}</span></div>{% endfor %}
+      <div class="alert {{ 'on' if error }}" id="login-err" role="alert">{{ ic("i-alert") }}<span>{{ error or "" }}</span></div>
+      <div class="field"><label for="lg-user">Usuario</label><input id="lg-user" name="usuario" value="{{ usuario }}" autocomplete="username" placeholder="Ej. lrios" required autofocus></div>
+      <div class="field"><label for="lg-pass">Contraseña</label><input id="lg-pass" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required></div>
+      <button class="btn btn-purple" style="width:100%;padding:14px">Entrar al panel</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
