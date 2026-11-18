@@ -3,6 +3,8 @@
 Sitio web, asistente de citas (chatbot) y panel administrativo para la clínica veterinaria **Vida Animal**, sucursal II (Plaza del Sol, Ciudad Juárez, Chihuahua).
 Sitio web, asistente de citas (chatbot) y panel administrativo para la clínica veterinaria **Vida Animal**, sucursal II (Plaza del Sol, Ciudad Juárez, Chihuahua).
 
+URL: https://vida-animal-ii.onrender.com/
+
 Proyecto académico de la materia *Administración y Evaluación de Proyectos de Tecnologías de Información* (UACJ). El contexto y la propuesta están en [`docs/fase-1-resumen.md`](docs/fase-1-resumen.md) y el diseño original de Figma en [`prototipo/`](prototipo/).
 
 ## Qué incluye
@@ -27,7 +29,6 @@ Proyecto académico de la materia *Administración y Evaluación de Proyectos de
 - Zona horaria: `America/Ciudad_Juarez`.
 
 ## Tecnologías
-URL: https://vida-animal-ii.onrender.com/
 
 Proyecto académico de la materia *Administración y Evaluación de Proyectos de Tecnologías de Información* (UACJ). El contexto y la propuesta están en [`docs/fase-1-resumen.md`](docs/fase-1-resumen.md) y el diseño original de Figma en [`prototipo/`](prototipo/).
 
